@@ -1,0 +1,2 @@
+## Vortex
+- A blazingly fast, command-line video processing tool built with C++. Vortex leverages the power of the FFmpeg libraries to provide a streamlined, high-performance interface for your video editing needs. It's designed to handle tasks like video compression, trimming, and audio extraction with incredible speed and efficiency.

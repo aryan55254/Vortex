@@ -1,0 +1,11 @@
+# CMake build files
+/build/
+
+# Executable
+vortex-cpp
+
+# Object files
+*.o
+
+# Visual Studio Code files
+.vscode/
