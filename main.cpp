@@ -3,35 +3,29 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
+    if (argc < 3)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_video_file>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_video_file> <output_video_file>" << std::endl;
         return 1;
     }
 
     const char *inputFilename = argv[1];
-    
-    // 1. CONSTRUCTOR is called
+    const char *outputFilename = argv[2];
+
     VideoProcessor processor;
 
-    // 2. Open the file and set up the decoder
     if (processor.openFile(inputFilename) < 0)
     {
-        std::cerr << "Failed to initialize video processor." << std::endl;
-        // Destructor calls closeFile() automatically here.
+        std::cerr << "Failed to initialize input processor." << std::endl;
         return 1;
     }
 
-    // 3. Start the main processing loop
-    std::cout << "\nStarting decoding and processing loop..." << std::endl;
-    if (processor.processVideo() < 0)
+    if (processor.processVideo(outputFilename) < 0)
     {
         std::cerr << "Processing loop encountered an error." << std::endl;
-        // Destructor calls closeFile() automatically here.
         return 1;
     }
 
-    std::cout << "\nProcessing complete. Shutting down." << std::endl;
-    // 4. DESTRUCTOR is called automatically here.
+    std::cout << "\nProcessing complete. Output saved to: " << outputFilename << std::endl;
     return 0;
 }
