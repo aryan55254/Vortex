@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieparser from 'cookie-parser';
 import connectdb from './config/db';
 import { env } from './config/env';
+import videorouter from './routes/video.routes';
+import { errorHandler } from "./middlewares/errorhandler.middleware"
 
 const app = express();
 
@@ -13,7 +15,10 @@ app.use(cookieparser());
 
 connectdb();
 
-const PORT = env.PORT || 8080;
-app.get('/', (req, res) => { res.json({ status: 'ok' }); });
+app.use('/api/videos', videorouter);
 
-app.listen(PORT, () => { console.log('Server is running!'); })
+app.use(errorHandler);
+
+const PORT = env.PORT || 8080;
+
+app.listen(PORT, () => { console.log('Server is running!'); });
