@@ -1,9 +1,14 @@
+import { rejects } from 'assert';
 import { VideoFormat, VideoInfoResponse } from '../types/types';
 import { spawn } from 'child_process';
 import { Response } from 'express';
 import https from 'https';
+import os from 'os';
+import path from 'path';
+import crypto from 'crypto';
+import fs from 'fs';
 
-const runSpawnCommand = (command: string, args: string[]): Promise<string> => {
+const runSpawnCommand = (command: string, args: any[]): Promise<string> => {
     return new Promise((resolve, reject) => {
         const child = spawn(command, args);
 
@@ -26,6 +31,26 @@ const runSpawnCommand = (command: string, args: string[]): Promise<string> => {
             }
         });
         child.on('error', (err) => {
+            reject(err);
+        });
+    });
+};
+
+const downloadFile = (url: string, dest: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const fileStream = fs.createWriteStream(dest);
+
+        const request = https.get(url, (response) => {
+            response.pipe(fileStream);
+
+            fileStream.on('finish', () => {
+                fileStream.close();
+                resolve();
+            });
+        });
+
+        request.on('error', (err) => {
+            fs.unlink(dest, () => { });
             reject(err);
         });
     });
@@ -112,4 +137,41 @@ export const streamFullVideo = (url: string, format_id: string, res: Response): 
 
         }
     });
+};
+
+export const processandtrimvideo = async (options: {
+    url: string,
+    formatId: string,
+    startTime: string,
+    endTime: string
+}): Promise<string> => {
+    const uniqueSuffix = crypto.randomUUID();
+    const inputPath = path.join(os.tmpdir(), `vortex-input-${uniqueSuffix}.mp4`);
+    const outputPath = path.join(os.tmpdir(), `vortex-output-${uniqueSuffix}.mp4`);
+
+    console.log(`Generated temp paths. Input: ${inputPath}, Output: ${outputPath}`);
+    try {
+        console.log('Getting direct video URL...');
+        const directUrl = await getDirectUrl(options.url, options.formatId);
+        console.log('Downloading full video to server...');
+        await downloadFile(directUrl, inputPath);
+        console.log('Download complete.');
+        console.log('Starting ffmpeg trim process...');
+        const ffmpegArgs = [
+            '-i', inputPath,
+            '-ss', options.startTime,
+            '-to', options.endTime,
+            '-c', 'copy',
+            outputPath
+        ];
+        await runSpawnCommand('ffmpeg', ffmpegArgs);
+        console.log('FFmpeg trim process completed.');
+        return outputPath;
+    }
+    finally {
+        fs.unlink(inputPath, (err) => {
+            if (err) console.error(`Error deleting temp INPUT file ${inputPath}:`, err);
+            else console.log(`Successfully cleaned up temp INPUT file: ${inputPath}`);
+        });
+    }
 };
