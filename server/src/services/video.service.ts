@@ -1,4 +1,3 @@
-import { rejects } from 'assert';
 import { VideoFormat, VideoInfoResponse } from '../types/types';
 import { spawn } from 'child_process';
 import { Response } from 'express';
