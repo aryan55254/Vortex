@@ -1,4 +1,10 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
+export interface IUser extends Document {
+    googleId: string;
+    displayName: string;
+    email: string;
+    avatar?: string;
+}
 
 const userSchema = new Schema({
     googleId: {
@@ -19,4 +25,4 @@ const userSchema = new Schema({
     },
 }, { timestamps: true });
 
-export const User = model('User', userSchema);
+export const User = model<IUser>('User', userSchema);

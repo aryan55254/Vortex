@@ -40,7 +40,6 @@ export const handleTrimVideo = async (req: Request, res: Response, next: NextFun
         res.setHeader('Content-Disposition', 'attachment; filename="vortex-download.mp4"');
         res.setHeader('Content-Type', 'video/mp4');
         const { url, formatId, startTime, endTime } = req.body;
-
         if (!url || !formatId || !startTime || !endTime) {
             res.status(400).json({ message: "URL, formatId, startTime, and endTime are all required." });
             return;
