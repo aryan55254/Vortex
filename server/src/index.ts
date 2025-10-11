@@ -12,6 +12,8 @@ import MongoStore from 'connect-mongo';
 import './config/passport.setup';
 import { get } from 'http';
 import authRouter from './routes/auth.routes';
+import logger from './utils/logger';
+
 const app = express();
 
 app.use(cors());
@@ -43,4 +45,4 @@ app.use(errorHandler);
 
 const PORT = env.PORT || 8080;
 
-app.listen(PORT, () => { console.log('Server is running!'); });
+app.listen(PORT, () => { logger.info('Server Is Running'); });

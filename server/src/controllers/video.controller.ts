@@ -2,6 +2,7 @@ import { VideoInfoResponse, GetVideoInfoRequestBody, VideoFormat } from '../type
 import { getVideoInfo, streamFullVideo, processandtrimvideo } from '../services/video.service'
 import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
+import logger from '../utils/logger';
 
 export const getvideoinfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -50,15 +51,15 @@ export const handleTrimVideo = async (req: Request, res: Response, next: NextFun
         res.download(trimmedFilePath, 'vortex-clip.mp4', (err) => {
             if (err) {
 
-                console.error("Error during file download:", err);
+                logger.error("Error during file download:", { error: err.message, stack: err.stack });
                 if (!res.headersSent) {
                     next(err);
                 }
             }
             if (trimmedFilePath) {
                 fs.unlink(trimmedFilePath, (unlinkErr) => {
-                    if (unlinkErr) console.error(`Error deleting temp file ${trimmedFilePath}:`, unlinkErr);
-                    else console.log(`Successfully cleaned up temp file: ${trimmedFilePath}`);
+                    if (unlinkErr) logger.error(`Error deleting temp file ${trimmedFilePath}:`, { error: unlinkErr.message, stack: unlinkErr.stack });
+                    else logger.info(`Successfully cleaned up temp file: ${trimmedFilePath}`);
                 });
             }
         });
@@ -66,7 +67,7 @@ export const handleTrimVideo = async (req: Request, res: Response, next: NextFun
     } catch (error) {
         if (trimmedFilePath) {
             fs.unlink(trimmedFilePath, (unlinkErr) => {
-                if (unlinkErr) console.error('Error during cleanup after failure:', unlinkErr);
+                if (unlinkErr) logger.error('Error during cleanup after failure:', { error: unlinkErr.message, stack: unlinkErr.stack });
             });
         }
         next(error);
