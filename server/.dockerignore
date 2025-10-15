@@ -1,0 +1,15 @@
+# Ignore dependencies, as they are installed inside the container
+node_modules
+
+# Ignore compiled output, as it's generated inside the container
+dist
+build
+
+# Ignore logs and environment variables
+*.log
+.env
+.env.*
+
+# Ignore git files
+.git
+.gitignore

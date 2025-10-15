@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  vortex-server:
+    build: ./server 
+    ports:
+      - "8080:8080" 
+    env_file:
+      - ./server/.env 
