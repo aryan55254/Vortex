@@ -5,8 +5,8 @@ const authRouter = Router();
 
 authRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 authRouter.get('/google/callback', passport.authenticate('google', {
-    failureRedirect: '/login-failed',
-    successRedirect: '/',
+    failureRedirect: 'http://localhost:5173/auth',
+    successRedirect: 'http://localhost:5173/video',
 }));
 authRouter.post('/logout', (req, res, next) => {
     req.logout((err) => {

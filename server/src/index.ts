@@ -10,13 +10,20 @@ import session from 'express-session';
 import passport from 'passport';
 import MongoStore from 'connect-mongo';
 import './config/passport.setup';
-import { get } from 'http';
 import authRouter from './routes/auth.routes';
 import logger from './utils/logger';
 
 const app = express();
+const corsOptions = {
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    optionsSuccessStatus: 204,
+};
 
-app.use(cors());
+app.use(cors(
+    corsOptions
+));
 app.use(express.json());
 app.use(cookieparser());
 
@@ -35,9 +42,6 @@ app.use(passport.session());
 
 connectdb();
 
-app.get('/', (req, res) => {
-    res.status(200).json({ message: 'OK' });
-});
 app.use('/api/videos', videorouter);
 app.use('/api/auth', authRouter)
 
