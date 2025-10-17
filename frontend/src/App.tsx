@@ -2,13 +2,11 @@ import { Routes, Route } from "react-router-dom";
 import Video from "./pages/Video";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Header from "./components/Header";
 import Landing from "./pages/Landing";
 
 function App() {
   return (
     <>
-      <Header />
       <main>
         <Routes>
           <Route path="/" element={<Landing />} />

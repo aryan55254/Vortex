@@ -1,0 +1,64 @@
+/* Base styles for the star layers */
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* Ensure the background image repeats, which is key for the loop */
+  background-repeat: repeat;
+}
+
+/* THE FIX: Animate 'background-position' for a seamless loop */
+@keyframes move-stars {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    /* Move the background vertically by the height of the image */
+    background-position: 0 -2000px;
+  }
+}
+
+/* First layer of stars */
+.stars1 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="200" cy="200" r="1.5" fill="%239333ea"/><circle cx="500" cy="800" r="1" fill="%23a855f7"/><circle cx="900" cy="400" r="1.2" fill="%23c084fc"/><circle cx="1200" cy="1100" r="1" fill="%239333ea"/><circle cx="1500" cy="600" r="1.5" fill="%23a855f7"/><circle cx="1800" cy="1400" r="1" fill="%23c084fc"/><circle cx="300" cy="1500" r="1.2" fill="%239333ea"/><circle cx="700" cy="1800" r="1" fill="%23a855f7"/><circle cx="1100"cy="100" r="1.5" fill="%23c084fc"/><circle cx="1600" cy="1900" r="1" fill="%239333ea"/><circle cx="100" cy="500" r="1.2" fill="%23c084fc"/><circle cx="400" cy="900" r="1" fill="%239333ea"/><circle cx="800" cy="1300" r="1.5" fill="%23a855f7"/><circle cx="1300" cy="1700" r="1.2" fill="%23c084fc"/><circle cx="1700" cy="20" r="1" fill="%239333ea"/><circle cx="600" cy="1000" r="1.5" fill="%23a855f7"/><circle cx="1000" cy="50" r="1" fill="%23c084fc"/><circle cx="1400" cy="300" r="1.2" fill="%239333ea"/><circle cx="1900" cy="700" r="1.5" fill="%23a855f7"/><circle cx="250" cy="1200" r="1" fill="%23c084fc"/></svg>');
+  z-index: 0;
+  animation: move-stars 100s linear infinite;
+}
+
+/* Second layer of stars */
+.stars2 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="100" cy="600" r="2" fill="%239333ea"/><circle cx="400" cy="1200" r="1.8" fill="%23a855f7"/><circle cx="800" cy="200" r="2.2" fill="%23c084fc"/><circle cx="1300" cy="900" r="1.8" fill="%239333ea"/><circle cx="1700" cy="300" r="2" fill="%23a855f7"/><circle cx="1900" cy="1600" r="2.2" fill="%23c084fc"/><circle cx="250" cy="1100" r="2" fill="%239333ea"/><circle cx="650" cy="1700" r="1.8" fill="%23a855f7"/><circle cx="1050" cy="500" r="2.2" fill="%23c084fc"/><circle cx="1450" cy="1950" r="2" fill="%239333ea"/><circle cx="50" cy="100" r="1.8" fill="%23c084fc"/><circle cx="350" cy="800" r="2.2" fill="%239333ea"/><circle cx="750" cy="1500" r="2" fill="%23a855f7"/><circle cx="1150" cy="1000" r="1.8" fill="%23c084fc"/><circle cx="1550" cy="1300" r="2.2" fill="%239333ea"/><circle cx="1850" cy="850" r="2" fill="%23a855f7"/></svg>');
+  z-index: 1;
+  animation: move-stars 100s linear infinite;
+}
+
+/* Third layer of stars */
+.stars3 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="300" cy="900" r="2.5" fill="%239333ea"/><circle cx="600" cy="100" r="2.8" fill="%23a855f7"/><circle cx="1000" cy="700" r="3" fill="%23c084fc"/><circle cx="1400" cy="1300" r="2.8" fill="%239333ea"/><circle cx="1800" cy="500" r="2.5" fill="%23a855f7"/><circle cx="150" cy="1700" r="3" fill="%23c084fc"/><circle cx="550" cy="1400" r="2.5" fill="%239333ea"/><circle cx="950" cy="1900" r="2.8" fill="%23a855f7"/><circle cx="1250" cy="250" r="3" fill="%23c084fc"/><circle cx="1650" cy="1000" r="2.5" fill="%239333ea"/><circle cx="450" cy="450" r="2.8" fill="%23c084fc"/><circle cx="850" cy="1150" r="3" fill="%239333ea"/><circle cx="1100" cy="1600" r="2.5" fill="%23a855f7"/><circle cx="1500" cy="800" r="2.8" fill="%23c084fc"/><circle cx="1950" cy="1200" r="3" fill="%239333ea"/></svg>');
+  z-index: 2;
+  animation: move-stars 100s linear infinite;
+}
+.stars4 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="200" cy="200" r="1.5" fill="%239333ea"/><circle cx="500" cy="800" r="1" fill="%23a855f7"/><circle cx="900" cy="400" r="1.2" fill="%23c084fc"/><circle cx="1200" cy="1100" r="1" fill="%239333ea"/><circle cx="1500" cy="600" r="1.5" fill="%23a855f7"/><circle cx="1800" cy="1400" r="1" fill="%23c084fc"/><circle cx="300" cy="1500" r="1.2" fill="%239333ea"/><circle cx="700" cy="1800" r="1" fill="%23a855f7"/><circle cx="1100"cy="100" r="1.5" fill="%23c084fc"/><circle cx="1600" cy="1900" r="1" fill="%239333ea"/><circle cx="100" cy="500" r="1.2" fill="%23c084fc"/><circle cx="400" cy="900" r="1" fill="%239333ea"/><circle cx="800" cy="1300" r="1.5" fill="%23a855f7"/><circle cx="1300" cy="1700" r="1.2" fill="%23c084fc"/><circle cx="1700" cy="20" r="1" fill="%239333ea"/><circle cx="600" cy="1000" r="1.5" fill="%23a855f7"/><circle cx="1000" cy="50" r="1" fill="%23c084fc"/><circle cx="1400" cy="300" r="1.2" fill="%239333ea"/><circle cx="1900" cy="700" r="1.5" fill="%23a855f7"/><circle cx="250" cy="1200" r="1" fill="%23c084fc"/></svg>');
+  z-index: 0;
+  animation: move-stars 100s linear infinite;
+}
+
+/* Second layer of stars */
+.stars5 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="100" cy="600" r="2" fill="%239333ea"/><circle cx="400" cy="1200" r="1.8" fill="%23a855f7"/><circle cx="800" cy="200" r="2.2" fill="%23c084fc"/><circle cx="1300" cy="900" r="1.8" fill="%239333ea"/><circle cx="1700" cy="300" r="2" fill="%23a855f7"/><circle cx="1900" cy="1600" r="2.2" fill="%23c084fc"/><circle cx="250" cy="1100" r="2" fill="%239333ea"/><circle cx="650" cy="1700" r="1.8" fill="%23a855f7"/><circle cx="1050" cy="500" r="2.2" fill="%23c084fc"/><circle cx="1450" cy="1950" r="2" fill="%239333ea"/><circle cx="50" cy="100" r="1.8" fill="%23c084fc"/><circle cx="350" cy="800" r="2.2" fill="%239333ea"/><circle cx="750" cy="1500" r="2" fill="%23a855f7"/><circle cx="1150" cy="1000" r="1.8" fill="%23c084fc"/><circle cx="1550" cy="1300" r="2.2" fill="%239333ea"/><circle cx="1850" cy="850" r="2" fill="%23a855f7"/></svg>');
+  z-index: 1;
+  animation: move-stars 100s linear infinite;
+}
+
+/* Third layer of stars */
+.stars6 {
+  background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2000"><circle cx="300" cy="900" r="2.5" fill="%239333ea"/><circle cx="600" cy="100" r="2.8" fill="%23a855f7"/><circle cx="1000" cy="700" r="3" fill="%23c084fc"/><circle cx="1400" cy="1300" r="2.8" fill="%239333ea"/><circle cx="1800" cy="500" r="2.5" fill="%23a855f7"/><circle cx="150" cy="1700" r="3" fill="%23c084fc"/><circle cx="550" cy="1400" r="2.5" fill="%239333ea"/><circle cx="950" cy="1900" r="2.8" fill="%23a855f7"/><circle cx="1250" cy="250" r="3" fill="%23c084fc"/><circle cx="1650" cy="1000" r="2.5" fill="%239333ea"/><circle cx="450" cy="450" r="2.8" fill="%23c084fc"/><circle cx="850" cy="1150" r="3" fill="%239333ea"/><circle cx="1100" cy="1600" r="2.5" fill="%23a855f7"/><circle cx="1500" cy="800" r="2.8" fill="%23c084fc"/><circle cx="1950" cy="1200" r="3" fill="%239333ea"/></svg>');
+  z-index: 2;
+  animation: move-stars 100s linear infinite;
+}
