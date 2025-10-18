@@ -10,9 +10,9 @@ interface User {
 }
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
   avatar?: string;
+  logout: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -23,7 +23,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkUserSession = async () => {
       try {
-        const response = await axios.get("/api/auth/me");
+        const response = await axios.get("http://localhost:8080/api/auth/me", {
+          withCredentials: true,
+        });
         if (response.data) {
           setUser(response.data);
         }
@@ -38,7 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post("/api/auth/logout");
+      await axios.post("http://localhost:8080/api/auth/logout", {
+        withCredentials: true,
+      });
       setUser(null);
       window.location.href = "/";
     } catch (error: any) {
@@ -46,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, isAuthenticated: !!user, isLoading, logout };
+  const value = { user, isLoading, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -38,7 +38,7 @@ const Landing: FC = () => {
       <div className="stars stars1"></div>
       <div className="stars stars2"></div>
       <div className="stars stars3"></div>
-       <div className="stars stars4"></div>
+      <div className="stars stars4"></div>
       <div className="stars stars5"></div>
       <div className="stars stars6"></div>
 
@@ -73,7 +73,7 @@ const Landing: FC = () => {
                 </div>
               </nav>
               <Link to="/auth">
-                <button className="text-white text-xl cursor-pointer bg-purple-700 hover:bg-purple-500 px-5 py-3 font-bold rounded-md transition-colors duration-200">
+                <button className="text-white text-xl cursor-pointer bg-purple-700 hover:bg-purple-900 px-5 py-3 font-bold rounded-md transition-colors duration-200">
                   Get Started
                 </button>
               </Link>
@@ -101,7 +101,7 @@ const Landing: FC = () => {
               </p>
               <div className="mt-10">
                 <Link to="/auth">
-                  <button className="text-white text-xl cursor-pointer bg-purple-700 hover:bg-purple-500 px-10 py-4 font-bold rounded-lg transition-transform transform hover:scale-105 duration-300">
+                  <button className="text-white text-xl cursor-pointer bg-purple-700 hover:bg-purple-900 px-10 py-4 font-bold rounded-lg transition-transform transform hover:scale-105 duration-300">
                     Start Clipping
                   </button>
                 </Link>
