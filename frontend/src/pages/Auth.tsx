@@ -2,6 +2,8 @@ import { GiVortex } from "react-icons/gi";
 import { FaGoogle } from "react-icons/fa";
 import "../StarryBackground.css";
 
+const API = import.meta.env.VITE_BaseAPI;
+
 const Auth = () => {
   return (
     <>
@@ -20,7 +22,7 @@ const Auth = () => {
           <p className="text-gray-300 mb-8 text-lg">
             Please log in with Google to continue
           </p>
-          <a href="http://localhost:8080/api/auth/google">
+          <a href={`${API}/api/auth/google`}>
             <button className="w-full flex items-center justify-center cursor-pointer bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
               <FaGoogle className="mr-3 h-5 w-5" />
               Login with Google

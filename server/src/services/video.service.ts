@@ -37,44 +37,6 @@ const runSpawnCommand = (command: string, args: any[]): Promise<string> => {
     });
 };
 
-const downloadFile = (url: string, dest: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        const fileStream = fs.createWriteStream(dest);
-
-        const request = https.get(url, (response) => {
-            response.pipe(fileStream);
-
-            fileStream.on('finish', () => {
-                fileStream.close();
-                resolve();
-            });
-        });
-
-        request.on('error', (err) => {
-            logger.error('An Error Occured While Downloading File', { error: err.message, stack: err.stack });
-            fs.unlink(dest, () => { });
-            reject(err);
-        });
-    });
-};
-
-async function getDirectUrl(url: string, formatId: string): Promise<string> {
-    try {
-        const args = ['-f', formatId, '-g', url];
-        const stdout = await runSpawnCommand('yt-dlp', args);
-        const directUrl = stdout.trim();
-
-        if (!directUrl) {
-            throw new Error('yt-dlp did not return a URL for the given format.');
-        }
-
-        return directUrl;
-
-    } catch (err: any) {
-        logger.error('An Error Occured While getting url', { error: err.message, stack: err.stack });
-        throw new Error('Could not get a downloadable link for the requested format.');
-    }
-}
 
 export const getVideoInfo = async (url: string): Promise<VideoInfoResponse> => {
     try {
@@ -108,36 +70,42 @@ export const getVideoInfo = async (url: string): Promise<VideoInfoResponse> => {
 };
 
 export const streamFullVideo = (url: string, formatId: string, res: Response): Promise<void> => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
-            const directVideoUrl = await getDirectUrl(url, formatId);
-            const request = https.get(directVideoUrl, (downloadstream) => {
-                downloadstream.on('error', (error) => {
-                    logger.error('An Error Occured While dowloading stream', { error: error.message, stack: error.stack });
-                    reject(error);
-                });
+            const args = [
+                '-f', formatId,
+                url,
+                '-o', '-'
+            ];
+            const ytdlp = spawn('yt-dlp', args);
 
-                downloadstream.pipe(res);
+            ytdlp.stdout.pipe(res);
 
-                res.on('finish', () => {
-                    resolve();
-                });
-                res.on('close', () => {
-                    logger.info('Client Closed Connection Too Early');
-                    downloadstream.destroy();
-                    resolve();
-                });
+            ytdlp.stderr.on('data', (data) => {
+                logger.warn(`yt-dlp stderr (stream): ${data.toString()}`);
             });
-            request.on('error', (error) => {
-                logger.error('An Error Occured While making initial get request', { error: error.message, stack: error.stack });
+
+            ytdlp.on('error', (error) => {
+                logger.error('Failed to start yt-dlp process for streaming', { error: error.message, stack: error.stack });
                 reject(error);
             });
 
-        }
-        catch (error: any) {
-            logger.error('An Error Occured While streaming full video', { error: error.message, stack: error.stack });
-            reject(error);
+            ytdlp.on('close', (code) => {
+                if (code !== 0) {
+                    logger.error(`yt-dlp process exited with code ${code} (stream)`);
+                }
+                resolve();
+            });
 
+            res.on('close', () => {
+                logger.info('Client Closed Connection Too Early (stream), killing yt-dlp.');
+                ytdlp.kill();
+                resolve();
+            });
+
+        } catch (error: any) {
+            logger.error('An Error Occured While spawning yt-dlp for streaming', { error: error.message, stack: error.stack });
+            reject(error);
         }
     });
 };
@@ -154,10 +122,13 @@ export const processandtrimvideo = async (options: {
 
     logger.info(`Generated temp paths. Input: ${inputPath}, Output: ${outputPath}`);
     try {
-        logger.info('Getting direct video URL...');
-        const directUrl = await getDirectUrl(options.url, options.formatId);
-        logger.info('Downloading full video to server...');
-        await downloadFile(directUrl, inputPath);
+        logger.info('Downloading full video to server using yt-dlp...');
+        const ytdlpArgs = [
+            '-f', options.formatId,
+            options.url,
+            '-o', inputPath
+        ];
+        await runSpawnCommand('yt-dlp', ytdlpArgs);
         logger.info('Download complete.');
         logger.info('Starting ffmpeg trim process...');
         const ffmpegArgs = [
@@ -170,11 +141,18 @@ export const processandtrimvideo = async (options: {
         await runSpawnCommand('ffmpeg', ffmpegArgs);
         logger.info('FFmpeg trim process completed.');
         return outputPath;
+
+    } catch (error) {
+        logger.error('Failed during trim process:', error);
+        throw error;
     }
     finally {
         fs.unlink(inputPath, (err: any) => {
-            if (err) logger.error(`Error deleting temp INPUT file ${inputPath}:`, { error: err.message, stack: err.stack });
-            else logger.error(`Successfully cleaned up temp INPUT file: ${inputPath}`, { error: err.message, stack: err.stack });
+            if (err) {
+                logger.error(`Error deleting temp INPUT file ${inputPath}:`, { error: err.message, stack: err.stack });
+            } else {
+                logger.info(`Successfully cleaned up temp INPUT file: ${inputPath}`);
+            }
         });
     }
 };

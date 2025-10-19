@@ -10,6 +10,8 @@ import {
 } from "react-icons/fi";
 import "../StarryBackground.css";
 
+const API = import.meta.env.VITE_BaseAPI;
+
 export interface VideoFormat {
   formatId: string;
   resolution: string;
@@ -70,7 +72,7 @@ function Video() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/videos/info",
+        `${API}/api/videos/info`,
         { url: inputUrl },
         { withCredentials: true }
       );
@@ -94,8 +96,8 @@ function Video() {
     setError(null);
 
     const endpoint = isTrim
-      ? "http://localhost:8080/api/videos/trim"
-      : "http://localhost:8080/api/videos/download";
+      ? `${API}/api/videos/trim`
+      : `${API}/api/videos/download`;
     const payload: any = {
       url: inputUrl,
       formatId: selectedFormatId,
@@ -117,10 +119,27 @@ function Video() {
       const filename = isTrim ? "vortex-clip.mp4" : "vortex-download.mp4";
       downloadFileFromBlob(response.data, filename);
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          `Failed to ${isTrim ? "trim" : "download"} video.`
-      );
+      let errorMessage = `Failed to ${isTrim ? "trim" : "download"} video.`;
+
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data instanceof Blob
+      ) {
+        try {
+          if (err.response.data.type === "application/json") {
+            const errorJsonText = await err.response.data.text();
+            const errorData = JSON.parse(errorJsonText);
+            errorMessage = errorData.message || errorMessage;
+          }
+        } catch (parseError) {
+          console.error("Could not parse error blob:", parseError);
+        }
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +151,9 @@ function Video() {
       <div className="stars stars1"></div>
       <div className="stars stars2"></div>
       <div className="stars stars3"></div>
+      <div className="stars stars4"></div>
+      <div className="stars stars5"></div>
+      <div className="stars stars6"></div>
 
       {/* Main Content Wrapper */}
       <div className="relative z-10 min-h-screen">
