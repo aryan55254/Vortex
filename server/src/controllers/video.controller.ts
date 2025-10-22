@@ -1,5 +1,5 @@
 import { VideoInfoResponse, GetVideoInfoRequestBody, VideoFormat } from '../types/types';
-import { getVideoInfo, streamFullVideo, processandtrimvideo } from '../services/video.service'
+import { getVideoInfo, streamFullVideo, processTrimJob } from '../services/video.service'
 import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
 import logger from '../utils/logger';
@@ -46,7 +46,7 @@ export const handleTrimVideo = async (req: Request, res: Response, next: NextFun
             return;
         }
 
-        trimmedFilePath = await processandtrimvideo({ url, formatId, startTime, endTime });
+        trimmedFilePath = await processTrimJob({ url, formatId, startTime, endTime });
 
         res.download(trimmedFilePath, 'vortex-clip.mp4', (err) => {
             if (err) {
