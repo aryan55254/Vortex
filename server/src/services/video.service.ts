@@ -68,47 +68,6 @@ export const getVideoInfo = async (url: string): Promise<VideoInfoResponse> => {
 
 };
 
-export const streamFullVideo = (url: string, formatId: string, res: Response): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        try {
-            const args = [
-                '-f', formatId,
-                url,
-                '-o', '-'
-            ];
-            const ytdlp = spawn('yt-dlp', args);
-
-            ytdlp.stdout.pipe(res);
-
-            ytdlp.stderr.on('data', (data) => {
-                logger.warn(`yt-dlp stderr (stream): ${data.toString()}`);
-            });
-
-            ytdlp.on('error', (error) => {
-                logger.error('Failed to start yt-dlp process for streaming', { error: error.message, stack: error.stack });
-                reject(error);
-            });
-
-            ytdlp.on('close', (code) => {
-                if (code !== 0) {
-                    logger.error(`yt-dlp process exited with code ${code} (stream)`);
-                }
-                resolve();
-            });
-
-            res.on('close', () => {
-                logger.info('Client Closed Connection Too Early (stream), killing yt-dlp.');
-                ytdlp.kill();
-                resolve();
-            });
-
-        } catch (error: any) {
-            logger.error('An Error Occured While spawning yt-dlp for streaming', { error: error.message, stack: error.stack });
-            reject(error);
-        }
-    });
-};
-
 export const processandtrimvideo = async (options: {
     url: string,
     formatId: string,
@@ -199,6 +158,12 @@ export const processTrimJob = async (options: {
 }): Promise<string> => {
 
     logger.info('--- New Trim Job Received ---');
+    const duration = options.endTime - options.startTime;
+    const MAX_FALLBACK_MINUTES = 30;
+    if (duration > (MAX_FALLBACK_MINUTES * 60)) {
+        logger.error(`Fallback rejected: Trim duration (${duration}s) exceeds limit (${MAX_FALLBACK_MINUTES}m).`);
+        throw new Error(`This video format does not support efficient trimming. Clips must be under ${MAX_FALLBACK_MINUTES} minutes.`);
+    }
     try {
         logger.info('Attempting Smart Trim (Manifest)...');
         const outputPath = await trimSmartly(options);
@@ -207,14 +172,6 @@ export const processTrimJob = async (options: {
 
     } catch (smartTrimError) {
         logger.warn('Smart Trim failed. Attempting Fallback Path: Full Download...');
-        const duration = options.endTime - options.startTime;
-        const MAX_FALLBACK_MINUTES = 20;
-
-        if (duration > (MAX_FALLBACK_MINUTES * 60)) {
-            logger.error(`Fallback rejected: Trim duration (${duration}s) exceeds limit (${MAX_FALLBACK_MINUTES}m).`);
-            throw new Error(`This video format does not support efficient trimming. Clips must be under ${MAX_FALLBACK_MINUTES} minutes.`);
-        }
-
         logger.info('Guardrail passed. Proceeding with full download trim.');
         const outputPath = await processandtrimvideo(options);
         logger.info('Fallback Trim Succeeded.');
