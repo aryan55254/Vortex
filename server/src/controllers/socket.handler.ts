@@ -1,0 +1,65 @@
+import { Socket, Server } from "socket.io";
+import { low_priority_jobs, high_priority_jobs } from "../Queue/queue"
+import logger from "../utils/logger";
+
+const MAX_GLOBAL_TRIM_MINUTES = 30;
+const MAX_EXPRESS_LANE_SECONDS = 300;
+
+export const handlesocketevents = (io: Server) => {
+
+    io.on("connection", (socket) => {
+        logger.info("new user connected");
+
+        socket.on("start-trim", async (jobdata:
+            {
+                url: string;
+                formatId: string;
+                startTime: number;
+                endTime: number;
+            }) => {
+
+
+            logger.info(`Received 'start-trim' job from ${socket.id}`);
+            try {
+                const { url, formatId, startTime, endTime } = jobdata;
+                const duration = endTime - startTime;
+
+                if (duration > (MAX_GLOBAL_TRIM_MINUTES * 60)) {
+                    logger.warn(`Job from ${socket.id} rejected: Trim duration (${duration}s) exceeds global limit.`);
+                    socket.emit('job-failed', {
+                        error: `Trim duration is too long. Clips must be ${MAX_GLOBAL_TRIM_MINUTES} minutes or less.`
+                    });
+                    return;
+                }
+
+                const jobPayload = { ...jobdata, socketId: socket.id };
+
+                if (duration <= MAX_EXPRESS_LANE_SECONDS) {
+                    const job = await high_priority_jobs.add('trim-job', jobPayload);
+                    logger.info(`Job ${job.id} (High Priority) added to queue for ${socket.id}`);
+                    socket.emit('job-queued', { jobId: job.id, queue: 'high' });
+
+                } else {
+
+                    const job = await low_priority_jobs.add('trim-job', jobPayload);
+                    logger.info(`Job ${job.id} (Low Priority) added to queue for ${socket.id}`);
+                    socket.emit('job-queued', { jobId: job.id, queue: 'low' });
+                }
+
+
+            }
+            catch (err: any) {
+                logger.error(`Error processing 'start-trim' for ${socket.id}:`, err);
+                socket.emit('job-failed', {
+                    error: 'An unexpected error occurred on the server.'
+                });
+            }
+
+
+        });
+        socket.on('disconnect', () => {
+            logger.info(`User disconnected: ${socket.id}`);
+        });
+    });
+
+}
