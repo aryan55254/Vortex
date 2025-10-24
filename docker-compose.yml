@@ -6,3 +6,10 @@ services:
       - "8080:8080" 
     env_file:
       - ./server/.env 
+    depends_on:
+    - redis
+  redis:
+    image: "redis:alpine" 
+    ports :
+     - "6379:6379"
+    command: ["redis-server", "--requirepass", "mish::3791"]    

@@ -15,6 +15,9 @@ export const env = {
     GOOGLE_CLIENT_ID: getEnvVariable('GOOGLE_CLIENT_ID'),
     GOOGLE_CLIENT_SECRET: getEnvVariable('GOOGLE_CLIENT_SECRET'),
     NODE_ENV: getEnvVariable('NODE_ENV'),
-    CLIENT_URL: getEnvVariable('CLIENT_URL')
+    CLIENT_URL: getEnvVariable('CLIENT_URL'),
+    REDIS_HOST: getEnvVariable('REDIS_HOST'),
+    REDIS_PORT: parseInt(getEnvVariable('REDIS_PORT'), 10)
+
 };
 
