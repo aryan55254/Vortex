@@ -1,5 +1,5 @@
 import { Socket, Server } from "socket.io";
-import { low_priority_jobs, high_priority_jobs } from "../Queue/queue"
+import { trimjobs } from "../Queue/queue"
 import logger from "../utils/logger";
 
 const MAX_GLOBAL_TRIM_MINUTES = 30;
@@ -35,15 +35,19 @@ export const handlesocketevents = (io: Server) => {
                 const jobPayload = { ...jobdata, socketId: socket.id };
 
                 if (duration <= MAX_EXPRESS_LANE_SECONDS) {
-                    const job = await high_priority_jobs.add('trim-job', jobPayload);
+                    const job = await trimjobs.add('trim-job', jobPayload, {
+                        priority: 1
+                    });
                     logger.info(`Job ${job.id} (High Priority) added to queue for ${socket.id}`);
-                    socket.emit('job-queued', { jobId: job.id, queue: 'high' });
+                    socket.emit('job-queued', { jobId: job.id, priority: 'high' });
 
                 } else {
 
-                    const job = await low_priority_jobs.add('trim-job', jobPayload);
+                    const job = await trimjobs.add('trim-job', jobPayload, {
+                        priority: 2
+                    });
                     logger.info(`Job ${job.id} (Low Priority) added to queue for ${socket.id}`);
-                    socket.emit('job-queued', { jobId: job.id, queue: 'low' });
+                    socket.emit('job-queued', { jobId: job.id, priority: 'low' });
                 }
 
 

@@ -12,6 +12,16 @@ import MongoStore from 'connect-mongo';
 import './config/passport.setup';
 import authRouter from './routes/auth.routes';
 import logger from './utils/logger';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import fs from 'fs';
+import path from 'path';
+import { Worker, Job } from 'bullmq';
+import { redisConnection } from './config/redis.config';
+import { trimjobs } from './Queue/queue';
+import { handlesocketevents } from './controllers/socket.handler';
+import { processTrimJob } from './services/video.service';
+
 
 const app = express();
 const corsOptions = {
@@ -26,6 +36,7 @@ app.use(cors(
 ));
 app.use(express.json());
 app.use(cookieparser());
+
 
 app.use(session({
     secret: env.SESSION_SECRET,
@@ -45,8 +56,60 @@ connectdb();
 app.use('/api/videos', videorouter);
 app.use('/api/auth', authRouter)
 
+const httpserver = createServer(app);
+const io = new Server(httpserver, {
+    cors: {
+        origin: env.CLIENT_URL,
+        credentials: true,
+    }
+});
+
+handlesocketevents(io);
+
+logger.info("worker is starting");
+const worker = new Worker('vortex-worker', async (Job: Job) => {
+    logger.info(`Worker processing job ${Job.id} from queue `);
+    const outputPath = await processTrimJob(Job.data);
+    return outputPath;
+}, {
+    connection: redisConnection,
+});
+logger.info('BullMQ Worker is running.');
+
+worker.on('completed', async (job: Job, outputPath: string) => {
+    logger.info(`Job ${job.id} completed. Output at: ${outputPath}`);
+    const { socketId } = job.data;
+    try {
+        const fileBuffer = await fs.promises.readFile(outputPath);
+        io.to(socketId).emit('job-completed', {
+            file: fileBuffer,
+            filename: 'vortex-clip.mp4'
+        });
+        logger.info(`File sent to socket ${socketId}.`);
+        await fs.promises.unlink(outputPath);
+        logger.info(`Cleaned up temp file: ${outputPath}`);
+
+    } catch (error) {
+        logger.error(`Error sending completed job ${job.id} to user:`, error);
+        io.to(socketId).emit('job-failed', { error: 'Failed to read and send file.' });
+    }
+});
+
+worker.on('failed', (job: Job | undefined, error: Error) => {
+    if (job) {
+        logger.error(`Job ${job.id} failed:`, error.message);
+        const { socketId } = job.data;
+        io.to(socketId).emit('job-failed', { error: error.message });
+    } else {
+        logger.error('job failure occurred:', error);
+    }
+});
+
 app.use(errorHandler);
 
 const PORT = env.PORT || 8080;
 
-app.listen(PORT, () => { logger.info('Server Is Running'); });
+app.listen(PORT, () => {
+    logger.info('Server Is Running');
+    logger.info('websockets are listening for connections');
+});
