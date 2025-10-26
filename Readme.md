@@ -11,6 +11,6 @@
 
 ## Architecture
 
-This diagram illustrates the V2 architecture of the Vortex application, featuring a real-time WebSocket interface, a prioritized job queue (BullMQ/Redis), and an integrated worker process for handling video processing tasks.
+This diagram illustrates the architecture of the Vortex application, featuring a real-time WebSocket interface, a prioritized job queue (BullMQ/Redis), and an integrated worker process for handling video processing tasks.
 
 ![Vortex Architecture Diagram](docs/images/architecture.png)

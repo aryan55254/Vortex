@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
+import { io, Socket } from "socket.io-client";
 import axios, { type AxiosResponse } from "axios";
 import {
   FiScissors,
@@ -48,11 +49,26 @@ function Video() {
   const [videoData, setVideoData] = useState<VideoInfoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [socket, setsocket] = useState<Socket | null>(null);
   const [inputUrl, setInputUrl] = useState("");
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState("00:00:00");
   const [endTime, setEndTime] = useState("00:00:10");
+
+  useEffect(() => {
+    const newSocket = io(API, { withCredentials: true });
+    setsocket(newSocket);
+    newSocket.on("connect", () => {
+      console.log("Connected!");
+    });
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected!");
+    });
+    return () => {
+      console.log("Disconnecting socket on unmount...");
+      newSocket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (videoData?.formats?.length) {
