@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import axios, { type AxiosResponse } from "axios";
 import {
-  FiDownload,
   FiScissors,
   FiLoader,
   FiAlertTriangle,
@@ -87,7 +86,7 @@ function Video() {
     }
   };
 
-  const handleDownload = async (isTrim: boolean) => {
+  const handleDownload = async () => {
     if (!videoData || !selectedFormatId) {
       setError("Video data or format not available.");
       return;
@@ -95,17 +94,14 @@ function Video() {
     setIsLoading(true);
     setError(null);
 
-    const endpoint = isTrim
-      ? `${API}/api/videos/trim`
-      : `${API}/api/videos/download`;
+    const endpoint = `${API}/api/videos/trim`;
+
     const payload: any = {
       url: inputUrl,
       formatId: selectedFormatId,
     };
-    if (isTrim) {
-      payload.startTime = startTime;
-      payload.endTime = endTime;
-    }
+    payload.startTime = startTime;
+    payload.endTime = endTime;
 
     try {
       const response: AxiosResponse<Blob> = await axios.post(
@@ -116,10 +112,10 @@ function Video() {
           responseType: "blob",
         }
       );
-      const filename = isTrim ? "vortex-clip.mp4" : "vortex-download.mp4";
+      const filename = "vortex-clip.mp4";
       downloadFileFromBlob(response.data, filename);
     } catch (err: any) {
-      let errorMessage = `Failed to ${isTrim ? "trim" : "download"} video.`;
+      let errorMessage = `Failed to trim video.`;
 
       if (
         err.response &&
@@ -245,15 +241,6 @@ function Video() {
                 {/* Action Buttons */}
                 <div className="mt-6 border-t border-purple-800/50 pt-6">
                   <div className="flex flex-col md:flex-row gap-4">
-                    {/* Full Download */}
-                    <button
-                      onClick={() => handleDownload(false)}
-                      disabled={isLoading}
-                      className="flex-1 cursor-pointer border-2 border-purple-600 text-purple-400 font-bold py-3 px-6 rounded-md transition-colors flex items-center justify-center hover:bg-purple-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <FiDownload className="mr-2" /> Download Full Video
-                    </button>
-
                     {/* Trim Section */}
                     <div className="flex-1 bg-black/20 p-4 rounded-lg border border-purple-800/50">
                       <div className="flex gap-2 mb-3">
@@ -273,7 +260,7 @@ function Video() {
                         />
                       </div>
                       <button
-                        onClick={() => handleDownload(true)}
+                        onClick={() => handleDownload()}
                         disabled={isLoading}
                         className="w-full cursor-pointer bg-purple-700 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-md transition-colors flex items-center justify-center disabled:bg-gray-600/50 disabled:cursor-not-allowed"
                       >
