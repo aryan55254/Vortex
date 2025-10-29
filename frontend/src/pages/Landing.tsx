@@ -15,13 +15,12 @@ import "../StarryBackground.css";
 const faqs = [
   {
     question: "Which video platforms are supported?",
-    answer:
-      "Vortex is optimized to work with YouTube. Others platforms wouldn't work with vortex.",
+    answer: "Vortex will work well with Youtube , Twitter , Instagram",
   },
   {
     question: "Is there a time limit on the videos I can trim?",
     answer:
-      "Yes. In the current version, to ensure fast processing and stability, trimming is limited to videos under 10 minutes long. You can still fetch information for any video.",
+      "Yes. In the current version, to ensure fast processing and stability, total trimmed duration of video limited under 30 mins. You can still fetch information for any video.",
   },
   {
     question: "Do you store my videos or personal data?",
@@ -95,8 +94,8 @@ const Landing: FC = () => {
                 </span>
               </h1>
               <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Vortex is your personal video toolkit. Paste a Youtube URL, get
-                a high-speed download, or trim the perfect clip with server-side
+                Vortex is your personal video toolkit. Paste a Youtube or X or
+                Instagram URL , trim the perfect clip with server-side
                 precision. Simple, fast, and powerful.
               </p>
               <div className="mt-10">
@@ -109,7 +108,9 @@ const Landing: FC = () => {
               <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 mt-12">
                 <div className="flex items-center space-x-2">
                   <FiCheckCircle className="text-purple-700 h-6 w-6" />
-                  <p className="text-gray-300 text-lg">Direct Downloads</p>
+                  <p className="text-gray-300 text-lg">
+                    Multiple Platform Support
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <FiCheckCircle className="text-purple-700 h-6 w-6" />
@@ -141,12 +142,10 @@ const Landing: FC = () => {
                 <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl border border-purple-700/50">
                   <FiDownload className="text-purple-700 h-12 w-12 mb-6" />
                   <h3 className="text-2xl font-bold text-white mb-4">
-                    High-Speed Downloads
+                    High-Speed Trims
                   </h3>
                   <p className="text-gray-400">
-                    Choose your preferred resolution and get a direct,
-                    high-speed download of the full video. Our server handles
-                    the streaming so you get the file fast.
+                    Choose your preferred resolution.
                   </p>
                 </div>
                 <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl border border-purple-700/50">
@@ -211,10 +210,7 @@ const Landing: FC = () => {
                   3
                 </div>
                 <h3 className="text-2xl font-semibold mt-6 mb-2">Download</h3>
-                <p className="text-gray-400">
-                  Get your final video file, either the full version or your
-                  trimmed clip.
-                </p>
+                <p className="text-gray-400">Get your final video file.</p>
               </div>
             </div>
           </div>

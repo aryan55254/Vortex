@@ -76,9 +76,11 @@ function Video() {
     const newSocket = io(API, { withCredentials: true });
     setsocket(newSocket);
     newSocket.on("connect", () => {
+      setisconnected(true);
       console.log("Connected!");
     });
     newSocket.on("disconnect", () => {
+      setisconnected(false);
       console.log("Disconnected!");
     });
     return () => {
