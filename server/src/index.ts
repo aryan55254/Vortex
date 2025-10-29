@@ -13,7 +13,7 @@ import './config/passport.setup';
 import authRouter from './routes/auth.routes';
 import logger from './utils/logger';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import fs from 'fs';
 import path from 'path';
 import { Worker, Job } from 'bullmq';
@@ -21,6 +21,8 @@ import { redisConnection } from './config/redis.config';
 import { trimjobs } from './Queue/queue';
 import { handlesocketevents } from './controllers/socket.handler';
 import { processTrimJob } from './services/video.service';
+import { SocketMiddleware, ExpressMiddleware } from "./types/types"
+import { Request, Response, NextFunction } from 'express';
 
 
 const app = express();
@@ -37,16 +39,17 @@ app.use(cors(
 app.use(express.json());
 app.use(cookieparser());
 
-
-app.use(session({
+const sessionMiddleware = session({
     secret: env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: env.MONGO_URI }),
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7
+        maxAge: 1000 * 60 * 60 * 24 * 7 
     }
-}));
+});
+
+app.use(sessionMiddleware);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -64,10 +67,21 @@ const io = new Server(httpserver, {
     }
 });
 
+const wrap = (middleware: ExpressMiddleware): SocketMiddleware => {
+    return (socket: Socket, next: (err?: Error) => void) => {
+
+        middleware(socket.request as Request, {} as Response, next as NextFunction);
+    };
+}
+
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
 handlesocketevents(io);
 
 logger.info("worker is starting");
-const worker = new Worker('vortex-worker', async (Job: Job) => {
+const worker = new Worker('trim-jobs', async (Job: Job) => {
     logger.info(`Worker processing job ${Job.id} from queue `);
     const outputPath = await processTrimJob(Job.data);
     return outputPath;
@@ -109,7 +123,7 @@ app.use(errorHandler);
 
 const PORT = env.PORT || 8080;
 
-app.listen(PORT, () => {
+httpserver.listen(PORT, () => {
     logger.info('Server Is Running');
     logger.info('websockets are listening for connections');
 });

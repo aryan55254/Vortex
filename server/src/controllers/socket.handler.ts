@@ -8,6 +8,16 @@ const MAX_EXPRESS_LANE_SECONDS = 300;
 export const handlesocketevents = (io: Server) => {
 
     io.on("connection", (socket) => {
+
+        const user = (socket.request as any).user;
+
+        if (!user) {
+            logger.warn(`Unauthorized socket connection attempt rejected: ${socket.id}`);
+            socket.emit('auth-error', { message: 'Authentication required.' });
+            socket.disconnect(true);
+            return;
+        }
+
         logger.info("new user connected");
 
         socket.on("start-trim", async (jobdata:

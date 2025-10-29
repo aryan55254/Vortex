@@ -1,3 +1,6 @@
+import { Request, Response, NextFunction } from 'express';
+import { Socket } from 'socket.io';
+
 export interface VideoFormat {
     formatId: string;
     resolution: string;
@@ -12,3 +15,5 @@ export interface VideoInfoResponse {
 export interface GetVideoInfoRequestBody {
     url: string;
 }
+export type ExpressMiddleware = (req: Request, res: Response, next: NextFunction) => void;
+export type SocketMiddleware = (socket: Socket, next: (err?: Error) => void) => void;
