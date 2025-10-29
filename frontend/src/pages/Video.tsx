@@ -54,6 +54,12 @@ function Video() {
   const [selectedFormatId, setSelectedFormatId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState("00:00:00");
   const [endTime, setEndTime] = useState("00:00:10");
+  const [jobId, setjobId] = useState("");
+  const [jobStatus, setjobStatus] = useState("");
+  const [jobError, setjobError] = useState("");
+  const [BlobUrl, setBlobUrl] = useState("");
+  const [isconnected, setisconnected] = useState(false);
+  const [lastRevokedurl, setlastRevokedurl] = useState("");
 
   useEffect(() => {
     const newSocket = io(API, { withCredentials: true });
@@ -75,6 +81,44 @@ function Video() {
       setSelectedFormatId(videoData.formats[0].formatId);
     }
   }, [videoData]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("job-queued", (data) => {
+        setjobId(data.jobId);
+        setjobStatus("job is queued in the line");
+        setjobError("");
+        setBlobUrl("");
+        setisconnected(true);
+      });
+      socket.on("job-completed", (data) => {
+        const blob = new Blob([data.file], { type: "video/mp4" });
+        const url = window.URL.createObjectURL(blob);
+        setjobStatus("job is completed");
+        setBlobUrl(url);
+        setisconnected(true);
+      });
+      socket.on("job-failed", (data) => {
+        setjobStatus(" job-failed");
+        setjobError(data.error);
+        setisconnected(true);
+      });
+      socket.on("connect_error", (err) => {
+        setError(err.message);
+        setisconnected(false);
+      });
+      socket.on("disconnect", () => {
+        setisconnected(false);
+      });
+    }
+    return () => {
+      socket?.off("job-queued");
+      socket?.off("job-completed");
+      socket?.off("job-failed");
+      socket?.off("connect_error");
+      socket?.off("disconnect");
+    };
+  }, [socket]);
 
   const handleGetVideoInfo = async () => {
     if (!inputUrl) {
@@ -167,17 +211,14 @@ function Video() {
       <div className="stars stars5"></div>
       <div className="stars stars6"></div>
 
-      {/* Main Content Wrapper */}
       <div className="relative z-10 min-h-screen">
         <Header />
         <main className="max-w-4xl mx-auto p-4 md:p-8">
-          {/* Main "Glass" Card */}
           <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-purple-700/50 shadow-lg">
             <h1 className="text-3xl font-bold text-purple-400 mb-6 text-center">
               Vortex Video Toolkit
             </h1>
 
-            {/* URL Input Form */}
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
@@ -214,7 +255,7 @@ function Video() {
               </div>
             )}
 
-            {/* Results View */}
+            {/* Results */}
             {videoData && (
               <div className="mt-8 animate-fade-in">
                 <div className="grid md:grid-cols-3 gap-6 bg-black/20 rounded-lg">
@@ -254,10 +295,9 @@ function Video() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="mt-6 border-t border-purple-800/50 pt-6">
                   <div className="flex flex-col md:flex-row gap-4">
-                    {/* Trim Section */}
+                    {/* Trim*/}
                     <div className="flex-1 bg-black/20 p-4 rounded-lg border border-purple-800/50">
                       <div className="flex gap-2 mb-3">
                         <input
