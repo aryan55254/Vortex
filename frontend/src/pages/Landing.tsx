@@ -20,7 +20,7 @@ const faqs = [
   {
     question: "Is there a time limit on the videos I can trim?",
     answer:
-      "Yes. In the current version, to ensure fast processing and stability, total trimmed duration of video limited under 30 mins. You can still fetch information for any video.",
+      "Yes. In the current version, to ensure fast processing and stability, total trimmed duration of video limited under 15 mins. You can still fetch information for any video.",
   },
   {
     question: "Do you store my videos or personal data?",

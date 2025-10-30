@@ -67,9 +67,8 @@ function Video() {
   const [jobId, setjobId] = useState("");
   const [jobStatus, setjobStatus] = useState("");
   const [jobError, setjobError] = useState("");
-  const [BlobUrl, setBlobUrl] = useState("");
+  const [videoUrl, setvideoUrl] = useState("");
   const [isconnected, setisconnected] = useState(false);
-  const [lastRevokedurl, setlastRevokedurl] = useState("");
   const isProcessing = jobStatus === "queued" || jobStatus === "processing";
 
   useEffect(() => {
@@ -101,14 +100,13 @@ function Video() {
         setjobId(data.jobId);
         setjobStatus("queued");
         setjobError("");
-        setBlobUrl("");
+        setvideoUrl("");
         setisconnected(true);
       });
       socket.on("job-completed", (data) => {
-        const blob = new Blob([data.file], { type: "video/mp4" });
-        const url = window.URL.createObjectURL(blob);
+        const url = `${API}${data.downloadUrl}`;
         setjobStatus("completed");
-        setBlobUrl(url);
+        setvideoUrl(url);
         setisconnected(true);
       });
       socket.on("job-failed", (data) => {
@@ -170,12 +168,7 @@ function Video() {
     }
     setError(null);
     setjobError("");
-    if (BlobUrl && BlobUrl !== lastRevokedurl) {
-      console.log("Revoking old Blob URL:", BlobUrl);
-      window.URL.revokeObjectURL(BlobUrl);
-      setlastRevokedurl(BlobUrl);
-    }
-    setBlobUrl("");
+    setvideoUrl("");
     const startTimeInSeconds = timeStringToSeconds(startTime);
     const endTimeInSeconds = timeStringToSeconds(endTime);
 
@@ -414,7 +407,7 @@ function Video() {
                         </div>
                       </div>
                     )}
-                    {jobStatus === "completed" && BlobUrl && (
+                    {jobStatus === "completed" && videoUrl && (
                       <div className="flex flex-col sm:flex-row items-center justify-between text-green-400 bg-green-500/10 p-3 rounded-md border border-green-500/30">
                         <div className="flex items-center mb-2 sm:mb-0">
                           <FiCheckCircle className="mr-3 flex-shrink-0" />
@@ -428,7 +421,7 @@ function Video() {
                           </div>
                         </div>
                         <a
-                          href={BlobUrl}
+                          href={videoUrl}
                           download="vortex-clip.mp4"
                           className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center justify-center text-sm"
                         >

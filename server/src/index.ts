@@ -76,7 +76,7 @@ const apiLimiter = rateLimit({
 });
 
 
-logger.info('Applying API rate limiting (100 requests per 15 minutes).');
+logger.info('Applying API rate limiting (25 requests per 15 minutes).');
 app.use('/api', apiLimiter);
 
 app.use('/api/videos', videorouter);
@@ -190,6 +190,15 @@ const cleanupInterval = 15 * 60 * 1000;
 logger.info(`Scheduling file cleanup to run every ${cleanupInterval / 60000} minutes.`);
 cleanupOldFiles();
 setInterval(cleanupOldFiles, cleanupInterval);
+
+process.on('uncaughtException', (error: Error & { code?: string }) => {
+    if ((error as any).code === 'EPIPE') {
+        logger.warn('uncaughtException: EPIPE (Broken Pipe). A user probably disconnected during a download.');
+    } else {
+        logger.error('--- FATAL: UNCAUGHT EXCEPTION ---');
+        logger.error(error);
+    }
+});
 
 app.use(errorHandler);
 
