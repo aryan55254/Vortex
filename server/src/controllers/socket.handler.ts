@@ -2,7 +2,7 @@ import { Socket, Server } from "socket.io";
 import { trimjobs } from "../Queue/queue"
 import logger from "../utils/logger";
 
-const MAX_GLOBAL_TRIM_MINUTES = 30;
+const MAX_GLOBAL_TRIM_MINUTES = 15;
 const MAX_EXPRESS_LANE_SECONDS = 300;
 
 export const handlesocketevents = (io: Server) => {

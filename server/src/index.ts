@@ -23,6 +23,7 @@ import { handlesocketevents } from './controllers/socket.handler';
 import { processTrimJob } from './services/video.service';
 import { SocketMiddleware, ExpressMiddleware } from "./types/types"
 import { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 const corsOptions = {
@@ -61,6 +62,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 connectdb();
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 25,
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn(`Rate limit exceeded for IP: ${req.ip}. Path: ${req.path}`);
+        res.status(options.statusCode).send(options.message);
+    }
+});
+
+
+logger.info('Applying API rate limiting (100 requests per 15 minutes).');
+app.use('/api', apiLimiter);
 
 app.use('/api/videos', videorouter);
 app.use('/api/auth', authRouter)
@@ -128,6 +145,51 @@ worker.on('failed', (job: Job | undefined, error: Error) => {
         logger.error('job failure occurred:', error);
     }
 });
+
+const cleanupOldFiles = async () => {
+    logger.info('Running cleanup task for old trim files...');
+    const maxAge = 15 * 60 * 1000;
+    const now = Date.now();
+
+    try {
+        const files = await fs.promises.readdir(trimsDir);
+        if (files.length === 0) {
+            logger.info('Cleanup: No files found to check.');
+            return;
+        }
+
+        let filesDeleted = 0;
+        for (const file of files) {
+            if (!file.endsWith('.mp4')) continue;
+
+            const filePath = path.join(trimsDir, file);
+            try {
+                const stats = await fs.promises.stat(filePath);
+                const fileAge = now - stats.mtime.getTime();
+
+                if (fileAge > maxAge) {
+                    await fs.promises.unlink(filePath);
+                    logger.info(`Cleanup: Deleted old file: ${file}`);
+                    filesDeleted++;
+                }
+            } catch (statError) {
+                logger.warn(`Cleanup: Error getting stats for ${file}, skipping:`, statError);
+            }
+        }
+        if (filesDeleted > 0) {
+            logger.info(`Cleanup: Finished. Deleted ${filesDeleted} old file(s).`);
+        } else {
+            logger.info('Cleanup: Finished. No old files to delete.');
+        }
+    } catch (err) {
+        logger.error('Cleanup: Error reading trims directory:', err);
+    }
+};
+
+const cleanupInterval = 15 * 60 * 1000;
+logger.info(`Scheduling file cleanup to run every ${cleanupInterval / 60000} minutes.`);
+cleanupOldFiles();
+setInterval(cleanupOldFiles, cleanupInterval);
 
 app.use(errorHandler);
 
