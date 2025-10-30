@@ -24,7 +24,6 @@ import { processTrimJob } from './services/video.service';
 import { SocketMiddleware, ExpressMiddleware } from "./types/types"
 import { Request, Response, NextFunction } from 'express';
 
-
 const app = express();
 const corsOptions = {
     origin: env.CLIENT_URL,
@@ -32,6 +31,13 @@ const corsOptions = {
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     optionsSuccessStatus: 204,
 };
+
+const trimsDir = path.join(__dirname, 'public', 'trims');
+if (!fs.existsSync(trimsDir)) {
+    logger.info(`Creating public trims directory at: ${trimsDir}`);
+    fs.mkdirSync(trimsDir, { recursive: true });
+}
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors(
     corsOptions
@@ -45,7 +51,7 @@ const sessionMiddleware = session({
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: env.MONGO_URI }),
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 7 
+        maxAge: 1000 * 60 * 60 * 24 * 7
     }
 });
 
@@ -94,18 +100,22 @@ worker.on('completed', async (job: Job, outputPath: string) => {
     logger.info(`Job ${job.id} completed. Output at: ${outputPath}`);
     const { socketId } = job.data;
     try {
-        const fileBuffer = await fs.promises.readFile(outputPath);
+        const finalFileName = `${job.id}.mp4`;
+        const finalDir = path.join(__dirname, 'public', 'trims');
+        const finalOutputPath = path.join(finalDir, finalFileName);
+        await fs.promises.rename(outputPath, finalOutputPath);
+        logger.info(`File moved to public path: ${finalOutputPath}`);
+        const downloadUrl = `/trims/${finalFileName}`;
         io.to(socketId).emit('job-completed', {
-            file: fileBuffer,
-            filename: 'vortex-clip.mp4'
+            jobId: job.id,
+            downloadUrl: downloadUrl
         });
-        logger.info(`File sent to socket ${socketId}.`);
-        await fs.promises.unlink(outputPath);
-        logger.info(`Cleaned up temp file: ${outputPath}`);
+
+        logger.info(`File URL sent to socket ${socketId}.`);
 
     } catch (error) {
-        logger.error(`Error sending completed job ${job.id} to user:`, error);
-        io.to(socketId).emit('job-failed', { error: 'Failed to read and send file.' });
+        logger.error(`Error processing completed job ${job.id}:`, error);
+        io.to(socketId).emit('job-failed', { error: 'Failed to make file available for download.' });
     }
 });
 

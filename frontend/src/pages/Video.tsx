@@ -99,7 +99,7 @@ function Video() {
     if (socket) {
       socket.on("job-queued", (data) => {
         setjobId(data.jobId);
-        setjobStatus("job is queued in the line");
+        setjobStatus("queued");
         setjobError("");
         setBlobUrl("");
         setisconnected(true);
@@ -107,12 +107,12 @@ function Video() {
       socket.on("job-completed", (data) => {
         const blob = new Blob([data.file], { type: "video/mp4" });
         const url = window.URL.createObjectURL(blob);
-        setjobStatus("job is completed");
+        setjobStatus("completed");
         setBlobUrl(url);
         setisconnected(true);
       });
       socket.on("job-failed", (data) => {
-        setjobStatus(" job-failed");
+        setjobStatus("failed");
         setjobError(data.error);
         setisconnected(true);
       });
@@ -276,7 +276,15 @@ function Video() {
                 {/* Video Info Display */}
                 <div className="grid md:grid-cols-3 gap-6 bg-black/20 p-4 rounded-lg border border-purple-800/50 mb-6">
                   <img
-                    src={videoData.thumbnail}
+                    src={
+                      videoData.thumbnail ||
+                      "https://placehold.co/600x400/2a004a/ffffff?text=Thumbnail\\nNot+Available"
+                    }
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src =
+                        "https://placehold.co/600x400/2a004a/ffffff?text=Thumbnail\\nError";
+                    }}
                     alt={videoData.title}
                     className="rounded-lg md:col-span-1 w-full border-2 border-purple-900 object-cover"
                   />
