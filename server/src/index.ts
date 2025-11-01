@@ -159,7 +159,7 @@ worker.on('failed', (job: Job | undefined, error: Error) => {
 
 const cleanupOldFiles = async () => {
     logger.info('Running cleanup task for old trim files...');
-    const maxAge = 15 * 60 * 1000;
+    const maxAge = 10 * 60 * 1000;
     const now = Date.now();
 
     try {
@@ -197,7 +197,7 @@ const cleanupOldFiles = async () => {
     }
 };
 
-const cleanupInterval = 15 * 60 * 1000;
+const cleanupInterval = 10 * 60 * 1000;
 logger.info(`Scheduling file cleanup to run every ${cleanupInterval / 60000} minutes.`);
 cleanupOldFiles();
 setInterval(cleanupOldFiles, cleanupInterval);
