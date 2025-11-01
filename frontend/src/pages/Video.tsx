@@ -103,6 +103,9 @@ function Video() {
         setvideoUrl("");
         setisconnected(true);
       });
+      socket.on("job-processing", () => {
+        setjobStatus("processing");
+      });
       socket.on("job-completed", (data) => {
         const url = `${API}${data.downloadUrl}`;
         setjobStatus("completed");

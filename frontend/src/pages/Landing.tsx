@@ -20,15 +20,14 @@ const faqs = [
   {
     question: "Is there a time limit on the videos I can trim?",
     answer:
-      "Yes. In the current version, to ensure fast processing and stability, total trimmed duration of video limited under 15 mins. You can still fetch information for any video.",
+      "Yes. In the current version, to ensure fast processing and stability, the total trimmed duration of a video is limited to 15 minutes. You can still fetch information for any video.",
   },
   {
     question: "Do you store my videos or personal data?",
     answer:
-      "No. Vortex is designed with privacy in mind. Videos are processed in-memory. We only store your login information.",
+      "No. Vortex is designed with privacy in mind. We only store your login information (like your email/name). Trimmed video clips are stored **temporarily** on our server to allow you to download them, and are **automatically and permanently deleted after 15 minutes.**",
   },
 ];
-
 const Landing: FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 

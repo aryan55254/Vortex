@@ -106,12 +106,23 @@ handlesocketevents(io);
 logger.info("worker is starting");
 const worker = new Worker('trim-jobs', async (Job: Job) => {
     logger.info(`Worker processing job ${Job.id} from queue `);
+    try {
+        const { socketId } = Job.data;
+        if (socketId) {
+            io.to(socketId).emit('job-processing', { jobId: Job.id });
+            logger.info(`Sent 'job-processing' signal to socket ${socketId}`);
+        }
+    } catch (emitError) {
+        logger.warn(`Failed to send 'job-processing' signal for job ${Job.id}:`, emitError);
+    }
     const outputPath = await processTrimJob(Job.data);
     return outputPath;
 }, {
     connection: redisConnection,
 });
 logger.info('BullMQ Worker is running.');
+
+
 
 worker.on('completed', async (job: Job, outputPath: string) => {
     logger.info(`Job ${job.id} completed. Output at: ${outputPath}`);
