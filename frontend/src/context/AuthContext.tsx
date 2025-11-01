@@ -2,6 +2,8 @@ import { createContext, useState, useEffect, useContext } from "react";
 import type { ReactNode } from "react";
 import axios from "axios";
 
+const API = import.meta.env.VITE_BaseAPI;
+
 interface User {
   _id: string;
   displayName: string;
@@ -23,7 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkUserSession = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/auth/me", {
+        const response = await axios.get(`${API}/api/auth/me`, {
           withCredentials: true,
         });
         if (response.data) {
@@ -40,7 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:8080/api/auth/logout", {
+      await axios.post(`${API}/api/auth/logout`, {
         withCredentials: true,
       });
       setUser(null);
