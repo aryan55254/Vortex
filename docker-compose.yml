@@ -12,4 +12,4 @@ services:
     image: "redis:alpine" 
     ports :
      - "6379:6379"
-    command: ["redis-server", "--requirepass", "mish::3791"]    
+    command: ["redis-server", "--requirepass", "mish3791"]    
