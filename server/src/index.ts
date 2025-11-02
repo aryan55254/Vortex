@@ -26,6 +26,9 @@ import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const corsOptions = {
     origin: env.CLIENT_URL,
     credentials: true,
@@ -33,12 +36,14 @@ const corsOptions = {
     optionsSuccessStatus: 204,
 };
 
-const trimsDir = path.join(__dirname, 'public', 'trims');
+const publicDir = path.join(process.cwd(), 'public');
+const trimsDir = path.join(publicDir, 'trims');
+
+
 if (!fs.existsSync(trimsDir)) {
-    logger.info(`Creating public trims directory at: ${trimsDir}`);
     fs.mkdirSync(trimsDir, { recursive: true });
 }
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(publicDir));
 
 app.use(cors(
     corsOptions
@@ -127,9 +132,14 @@ logger.info('BullMQ Worker is running.');
 worker.on('completed', async (job: Job, outputPath: string) => {
     logger.info(`Job ${job.id} completed. Output at: ${outputPath}`);
     const { socketId } = job.data;
+    if (!await fs.promises.stat(outputPath).catch(() => null)) {
+        logger.error(`Output file missing at ${outputPath}`);
+        return;
+    }
+
     try {
         const finalFileName = `${job.id}.mp4`;
-        const finalDir = path.join(__dirname, 'public', 'trims');
+        const finalDir = trimsDir;
         const finalOutputPath = path.join(finalDir, finalFileName);
         await fs.promises.rename(outputPath, finalOutputPath);
         logger.info(`File moved to public path: ${finalOutputPath}`);
