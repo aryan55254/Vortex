@@ -3,6 +3,8 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { User } from "../models/User.model";
 import { env } from "./env";
 
+const SERVER_URL = env.SERVER_URL;
+
 passport.serializeUser((user: any, done) => {
     done(null, user.id);
 });
@@ -17,7 +19,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: env.GOOGLE_CLIENT_ID,
     clientSecret: env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
+    callbackURL: `${SERVER_URL}/api/auth/google/callback`
 },
     async (_accessToken, _refreshToken, profile, done) => {
         try {
