@@ -15,12 +15,12 @@ import "../StarryBackground.css";
 const faqs = [
   {
     question: "Which video platforms are supported?",
-    answer: "Vortex will work well with Youtube , Twitter , Instagram",
+    answer: "Vortex will work well with Twitter And Instagram",
   },
   {
     question: "Is there a time limit on the videos I can trim?",
     answer:
-      "Yes. In the current version, to ensure fast processing and stability, the total trimmed duration of a video is limited to 15 minutes. You can still fetch information for any video.",
+      "Yes. In the current version, to ensure fast processing and stability, the total trimmed duration of a video is limited to 10 minutes. You can still fetch information for any video.",
   },
   {
     question: "Do you store my videos or personal data?",
@@ -96,7 +96,7 @@ const Landing: FC = () => {
                 </span>
               </h1>
               <p className="mt-6 text-base md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Vortex is your personal video toolkit. Paste a Youtube or X or
+                Vortex is your personal video toolkit. Paste a X or
                 Instagram URL , trim the perfect clip with server-side
                 precision. Simple, fast, and powerful.
               </p>
