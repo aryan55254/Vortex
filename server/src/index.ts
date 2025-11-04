@@ -26,6 +26,9 @@ import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 const corsOptions = {
     origin: env.CLIENT_URL,
     credentials: true,
@@ -33,12 +36,14 @@ const corsOptions = {
     optionsSuccessStatus: 204,
 };
 
-const trimsDir = path.join(__dirname, 'public', 'trims');
+const publicDir = path.join(process.cwd(), 'public');
+const trimsDir = path.join(publicDir, 'trims');
+
+
 if (!fs.existsSync(trimsDir)) {
-    logger.info(`Creating public trims directory at: ${trimsDir}`);
     fs.mkdirSync(trimsDir, { recursive: true });
 }
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(publicDir));
 
 app.use(cors(
     corsOptions
@@ -106,6 +111,15 @@ handlesocketevents(io);
 logger.info("worker is starting");
 const worker = new Worker('trim-jobs', async (Job: Job) => {
     logger.info(`Worker processing job ${Job.id} from queue `);
+    try {
+        const { socketId } = Job.data;
+        if (socketId) {
+            io.to(socketId).emit('job-processing', { jobId: Job.id });
+            logger.info(`Sent 'job-processing' signal to socket ${socketId}`);
+        }
+    } catch (emitError) {
+        logger.warn(`Failed to send 'job-processing' signal for job ${Job.id}:`, emitError);
+    }
     const outputPath = await processTrimJob(Job.data);
     return outputPath;
 }, {
@@ -113,12 +127,19 @@ const worker = new Worker('trim-jobs', async (Job: Job) => {
 });
 logger.info('BullMQ Worker is running.');
 
+
+
 worker.on('completed', async (job: Job, outputPath: string) => {
     logger.info(`Job ${job.id} completed. Output at: ${outputPath}`);
     const { socketId } = job.data;
+    if (!await fs.promises.stat(outputPath).catch(() => null)) {
+        logger.error(`Output file missing at ${outputPath}`);
+        return;
+    }
+
     try {
         const finalFileName = `${job.id}.mp4`;
-        const finalDir = path.join(__dirname, 'public', 'trims');
+        const finalDir = trimsDir;
         const finalOutputPath = path.join(finalDir, finalFileName);
         await fs.promises.rename(outputPath, finalOutputPath);
         logger.info(`File moved to public path: ${finalOutputPath}`);
@@ -148,7 +169,7 @@ worker.on('failed', (job: Job | undefined, error: Error) => {
 
 const cleanupOldFiles = async () => {
     logger.info('Running cleanup task for old trim files...');
-    const maxAge = 15 * 60 * 1000;
+    const maxAge = 10 * 60 * 1000;
     const now = Date.now();
 
     try {
@@ -186,7 +207,7 @@ const cleanupOldFiles = async () => {
     }
 };
 
-const cleanupInterval = 15 * 60 * 1000;
+const cleanupInterval = 10 * 60 * 1000;
 logger.info(`Scheduling file cleanup to run every ${cleanupInterval / 60000} minutes.`);
 cleanupOldFiles();
 setInterval(cleanupOldFiles, cleanupInterval);

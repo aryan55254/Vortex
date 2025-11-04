@@ -103,6 +103,9 @@ function Video() {
         setvideoUrl("");
         setisconnected(true);
       });
+      socket.on("job-processing", () => {
+        setjobStatus("processing");
+      });
       socket.on("job-completed", (data) => {
         const url = `${API}${data.downloadUrl}`;
         setjobStatus("completed");
@@ -218,7 +221,7 @@ function Video() {
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                placeholder="Paste your YouTube URL here..."
+                placeholder="Paste your URL here..."
                 value={inputUrl}
                 onChange={(e) => setInputUrl(e.target.value)}
                 disabled={isLoading || isProcessing}

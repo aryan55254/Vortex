@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import passport from 'passport';
+import { env } from "../config/env";
+
+const CLIENT_URL = env.CLIENT_URL;
 
 const authRouter = Router();
 
 authRouter.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 authRouter.get('/google/callback', passport.authenticate('google', {
-    failureRedirect: 'http://localhost:5173/auth',
-    successRedirect: 'http://localhost:5173/video',
+    failureRedirect: `${CLIENT_URL}/auth`,
+    successRedirect: `${CLIENT_URL}/video`,
 }));
 authRouter.post('/logout', (req, res, next) => {
     req.logout((err) => {
