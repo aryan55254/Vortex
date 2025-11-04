@@ -11,7 +11,6 @@ FROM node:18-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
     python3 \
     python3-venv \
     build-essential \

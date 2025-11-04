@@ -68,52 +68,6 @@ export const getVideoInfo = async (url: string): Promise<VideoInfoResponse> => {
 
 };
 
-export const processandtrimvideo = async (options: {
-    url: string,
-    formatId: string,
-    startTime: string,
-    endTime: string
-}): Promise<string> => {
-    const uniqueSuffix = crypto.randomUUID();
-    const inputPath = path.join(os.tmpdir(), `vortex-input-${uniqueSuffix}.mp4`);
-    const outputPath = path.join(os.tmpdir(), `vortex-output-${uniqueSuffix}.mp4`);
-
-    logger.info(`Generated temp paths. Input: ${inputPath}, Output: ${outputPath}`);
-    try {
-        logger.info('Downloading full video to server using yt-dlp...');
-        const ytdlpArgs = [
-            '-f', options.formatId,
-            options.url,
-            '-o', inputPath
-        ];
-        await runSpawnCommand('yt-dlp', ytdlpArgs);
-        logger.info('Download complete.');
-        logger.info('Starting ffmpeg trim process...');
-        const ffmpegArgs = [
-            '-i', inputPath,
-            '-ss', options.startTime,
-            '-to', options.endTime,
-            '-c', 'copy',
-            outputPath
-        ];
-        await runSpawnCommand('ffmpeg', ffmpegArgs);
-        logger.info('FFmpeg trim process completed.');
-        return outputPath;
-
-    } catch (error) {
-        logger.error('Failed during trim process:', error);
-        throw error;
-    }
-    finally {
-        fs.unlink(inputPath, (err: any) => {
-            if (err) {
-                logger.error(`Error deleting temp INPUT file ${inputPath}:`, { error: err.message, stack: err.stack });
-            } else {
-                logger.info(`Successfully cleaned up temp INPUT file: ${inputPath}`);
-            }
-        });
-    }
-};
 export const trimSmartly = async (options: {
     url: string,
     formatId: string,
@@ -158,23 +112,14 @@ export const processTrimJob = async (options: {
 }): Promise<string> => {
 
     logger.info('--- New Trim Job Received ---');
-    const duration = options.endTime - options.startTime;
-    const MAX_FALLBACK_MINUTES = 30;
-    if (duration > (MAX_FALLBACK_MINUTES * 60)) {
-        logger.error(`Fallback rejected: Trim duration (${duration}s) exceeds limit (${MAX_FALLBACK_MINUTES}m).`);
-        throw new Error(`This video format does not support efficient trimming. Clips must be under ${MAX_FALLBACK_MINUTES} minutes.`);
-    }
     try {
-        logger.info('Attempting Smart Trim (Manifest)...');
+        logger.info('Attempting Trim...');
         const outputPath = await trimSmartly(options);
         logger.info('Smart Trim Succeeded.');
         return outputPath;
 
     } catch (smartTrimError) {
-        logger.warn('Smart Trim failed. Attempting Fallback Path: Full Download...');
-        logger.info('Guardrail passed. Proceeding with full download trim.');
-        const outputPath = await processandtrimvideo(options);
-        logger.info('Fallback Trim Succeeded.');
-        return outputPath;
+        logger.error("Trim Failed");
+        throw smartTrimError;
     }
 }
