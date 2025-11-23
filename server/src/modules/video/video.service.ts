@@ -1,4 +1,4 @@
-import { VideoFormat, VideoInfoResponse } from '../types/types';
+import { VideoFormat, VideoInfoResponse } from '../../common/types/types';
 import { spawn } from 'child_process';
 import { Response } from 'express';
 import https from 'https';
