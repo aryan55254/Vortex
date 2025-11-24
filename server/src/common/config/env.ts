@@ -10,7 +10,13 @@ function getEnvVariable(key: string, required: boolean = true): string {
 
 export const env = {
     // Core
-    PORT: parseInt(getEnvVariable('PORT', false), 10) || 8080,
+    PORT: (() => {
+        const portStr = getEnvVariable('PORT', false);
+        if (!portStr) return 8080;
+        const port = parseInt(portStr, 10);
+        if (isNaN(port)) throw new Error('PORT must be a valid number');
+        return port;
+    })(),
     NODE_ENV: getEnvVariable('NODE_ENV', false) || 'development',
     SERVER_URL: getEnvVariable('SERVER_URL'),
     CLIENT_URL: getEnvVariable('CLIENT_URL'),
