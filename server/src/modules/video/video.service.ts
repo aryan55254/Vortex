@@ -28,12 +28,18 @@ export const processVideoJob = async (job: Job) => {
         logger.info(`[Job ${jobId}] Uploading Result...`);
         await StorageAdapter.upload(outputPath, outputKey);
 
+        try {
+            await StorageAdapter.delete(fileKey);
+            logger.info(`[Job ${jobId}] Deleted raw source file to save S3 space.`);
+        } catch (err) {
+            logger.warn(`[Job ${jobId}] Failed to delete source file:`, err);
+        }
+
         await job.updateProgress(100);
         return {
             status: 'completed',
-            originalKey: fileKey,
             resultKey: outputKey,
-            downloadUrl: await StorageAdapter.getPresignedUrl(outputKey, 'video/mp4') // Optional: Generate download link
+            downloadUrl: await StorageAdapter.getDownloadUrl(outputKey, 'video/mp4')
         };
 
     } catch (error) {

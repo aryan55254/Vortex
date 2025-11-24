@@ -94,6 +94,10 @@ queueEvents.on('failed', ({ jobId, failedReason }) => {
     io.emit(`job-failed-${jobId}`, { error: failedReason });
 });
 
+queueEvents.on('waiting', ({ jobId }) => {
+    io.emit(`job-queued-${jobId}`, { status: 'queued' });
+});
+
 httpServer.listen(env.PORT, () => {
     console.log(`Server running on port ${env.PORT}`);
 });

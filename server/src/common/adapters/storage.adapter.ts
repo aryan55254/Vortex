@@ -4,6 +4,7 @@ import fs from 'fs';
 import { pipeline } from 'stream/promises';
 import { env } from '../config/env';
 import { LIMITS } from '../config/limit';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 
 const s3 = new S3Client({
     region: env.S3_REGION,
@@ -44,5 +45,20 @@ export const StorageAdapter = {
         });
 
         await s3.send(command);
-    }
+    },
+    async delete(fileKey: string) {
+        const command = new DeleteObjectCommand({
+            Bucket: env.S3_BUCKET,
+            Key: fileKey
+        });
+        await s3.send(command);
+    },
+    async getDownloadUrl(fileKey: string, contentType: String) {
+        const command = new GetObjectCommand({
+            Bucket: env.S3_BUCKET,
+            Key: fileKey
+        });
+
+        return await getSignedUrl(s3, command, { expiresIn: 3600 });
+    },
 };
