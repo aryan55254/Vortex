@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { User } from "../models/User.model";
-import { env } from "./env";
+import { User } from "./User.model";
+import { env } from "../../common/config/env";
 
 const SERVER_URL = env.SERVER_URL;
 

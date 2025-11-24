@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
-import { env } from "../config/env";
+import { env } from "../../common/config/env";
 
 const CLIENT_URL = env.CLIENT_URL;
 

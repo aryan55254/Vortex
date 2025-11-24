@@ -4,6 +4,7 @@ export interface IUser extends Document {
     displayName: string;
     email: string;
     avatar?: string;
+    role: 'user' | 'admin';
 }
 
 const userSchema = new Schema({
@@ -23,6 +24,11 @@ const userSchema = new Schema({
     avatar: {
         type: String,
         required: false,
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
     },
 }, { timestamps: true });
 
