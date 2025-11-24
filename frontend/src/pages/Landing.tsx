@@ -81,7 +81,7 @@ const Landing: FC = () => {
                   <FaGithub className="h-6 w-6" />
                 </a>
                 <Link to="/auth">
-                  <button className="bg-white text-black hover:bg-purple-50 px-5 py-2.5 text-sm font-bold rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">
+                  <button className="bg-white cursor-pointer text-black hover:bg-purple-50 px-5 py-2.5 text-sm font-bold rounded-full transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">
                     Launch App
                   </button>
                 </Link>
@@ -99,13 +99,13 @@ const Landing: FC = () => {
               <div className="text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-300 text-xs font-semibold uppercase tracking-wider mb-6">
                   <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                  V2.0 is Live
+                  Vortex is Live
                 </div>
 
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
                   Video processing <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 animate-gradient-x">
-                    Reimagined.
+                  <span className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
+                    Uncluttered.
                   </span>
                 </h1>
 
@@ -116,12 +116,12 @@ const Landing: FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                   <Link to="/auth" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold px-8 py-4 rounded-xl transition-all shadow-[0_10px_40px_-10px_rgba(147,51,234,0.5)] hover:shadow-[0_10px_40px_-5px_rgba(147,51,234,0.7)] hover:-translate-y-1">
+                    <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-700 cursor-pointer text-white text-lg font-bold px-8 py-4 rounded-xl transition-all shadow-[0_10px_40px_-10px_rgba(147,51,234,0.5)] hover:shadow-[0_10px_40px_-5px_rgba(147,51,234,0.7)] hover:-translate-y-1">
                       Start Processing <FiArrowRight />
                     </button>
                   </Link>
                   <a href="#how-it-works" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900/50 hover:bg-gray-800 text-white border border-gray-700 text-lg font-semibold px-8 py-4 rounded-xl transition-all">
+                    <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900/50 hover:bg-gray-800 text-white border border-gray-700 cursor-pointer text-lg font-semibold px-8 py-4 rounded-xl transition-all">
                       <FiPlay className="w-5 h-5" /> How it works
                     </button>
                   </a>
@@ -129,13 +129,13 @@ const Landing: FC = () => {
 
                 <div className="mt-10 pt-8 border-t border-white/10 flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-gray-400 font-medium">
                   <div className="flex items-center gap-2">
-                    <FiCheck className="text-green-400" /> No Credit Card
-                  </div>
-                  <div className="flex items-center gap-2">
                     <FiCheck className="text-green-400" /> 100MB Uploads
                   </div>
                   <div className="flex items-center gap-2">
                     <FiCheck className="text-green-400" /> MP4/MOV/MKV
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FiCheck className="text-green-400" /> Open Source
                   </div>
                 </div>
               </div>
@@ -151,7 +151,7 @@ const Landing: FC = () => {
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
                     <div className="text-xs text-gray-500 font-mono">
-                      vortex-processor-v2.exe
+                      vortex-processor.exe
                     </div>
                   </div>
 
@@ -184,7 +184,7 @@ const Landing: FC = () => {
 
                     <div className="grid grid-cols-2 gap-3 mt-4">
                       <div className="h-10 bg-gray-800/50 rounded animate-pulse"></div>
-                      <div className="h-10 bg-purple-600 rounded flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-purple-900/20">
+                      <div className="h-10 bg-gray-900 rounded flex items-center justify-center text-white border border-gray-700 text-sm font-bold shadow-lg shadow-purple-900/20">
                         Download
                       </div>
                     </div>
@@ -303,7 +303,7 @@ const Landing: FC = () => {
                 >
                   <button
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center cursor-pointer justify-between p-6 text-left hover:bg-white/5 transition-colors"
                   >
                     <span className="font-medium text-white">
                       {faq.question}
@@ -338,8 +338,7 @@ const Landing: FC = () => {
               <span className="text-white font-bold text-lg">Vortex</span>
             </div>
             <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} Aryan Mishra. Systems Engineering
-              Portfolio.
+              © {new Date().getFullYear()} Aryan Mishra.
             </p>
             <div className="flex gap-6">
               <a
