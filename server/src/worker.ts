@@ -42,9 +42,19 @@ const worker = new Worker(VIDEO_QUEUE_NAME, async (job: Job) => {
         port: env.REDIS_PORT,
         password: env.REDIS_PASSWORD || undefined
     },
-    concurrency: 1 // Safety First
+    concurrency: 1,
+    lockDuration: 60000 * 5
 });
 
 worker.on('failed', (job, err) => {
     logger.error(`Job ${job?.id} failed: ${err.message}`);
 });
+
+const gracefulShutdown = async (signal: string) => {
+    logger.info(`Received ${signal}, closing worker...`);
+    await worker.close();
+    process.exit(0);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

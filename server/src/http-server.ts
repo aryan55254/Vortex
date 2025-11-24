@@ -8,13 +8,28 @@ import passport from 'passport';
 import MongoStore from 'connect-mongo';
 import { env } from './common/config/env';
 import { VIDEO_QUEUE_NAME } from './modules/video/video.queue';
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { ExpressAdapter } from '@bull-board/express';
+import { videoQueue } from './modules/video/video.queue';
 
 // Routes
 import videoRoutes from './modules/video/video.routes';
 import authRoutes from './modules/auth/auth.routes';
+import { isAdmin } from './common/middlewares/auth.middleware';
 
 const app = express();
 const httpServer = createServer(app);
+
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath('/admin/queues');
+
+createBullBoard({
+    queues: [new BullMQAdapter(videoQueue)],
+    serverAdapter: serverAdapter,
+});
+
+app.use('/admin/queues', isAdmin, serverAdapter.getRouter());
 
 const sessionMiddleware = session({
     secret: env.SESSION_SECRET,
