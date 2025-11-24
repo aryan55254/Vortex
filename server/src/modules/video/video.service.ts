@@ -1,125 +1,50 @@
-import { VideoFormat, VideoInfoResponse } from '../../common/types/types';
-import { spawn } from 'child_process';
-import { Response } from 'express';
-import https from 'https';
-import os from 'os';
 import path from 'path';
-import crypto from 'crypto';
 import fs from 'fs';
-import logger from '../utils/logger';
+import { Job } from 'bullmq';
+import { StorageAdapter } from '../../common/adapters/storage.adapter';
+import { FfmpegProcessor } from './processor/ffmpeg.processor';
+import logger from '../../common/utils/logger';
 
-const runSpawnCommand = (command: string, args: any[]): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const child = spawn(command, args);
+export const processVideoJob = async (job: Job) => {
+    const { fileKey, processingOptions } = job.data;
+    const jobId = job.id;
 
-        let stdout = '';
-        let stderr = '';
+    logger.info(`[Job ${jobId}] Starting Pipeline...`);
+    const tempDir = path.resolve('temp');
+    const inputPath = path.join(tempDir, 'uploads', `${jobId}_in`);
+    const outputPath = path.join(tempDir, 'processed', `${jobId}_out.mp4`);
+    const outputKey = `processed/${jobId}.mp4`;
 
-        child.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
-
-        child.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-        child.on('close', (code) => {
-            if (code !== 0 && !stdout) {
-                const error = new Error(stderr);
-                reject(error);
-            } else {
-                resolve(stdout);
-            }
-        });
-        child.on('error', (err) => {
-            reject(err);
-        });
-    });
-};
-
-
-export const getVideoInfo = async (url: string): Promise<VideoInfoResponse> => {
     try {
-        const stdout = await runSpawnCommand('yt-dlp', ['--dump-json', url]);
-        const rawData: any = JSON.parse(stdout);
-        const cleanFormats: VideoFormat[] = rawData.formats
-            .filter((f: any) =>
-                f.vcodec !== 'none' &&
-                f.acodec !== 'none' &&
-                f.ext === 'mp4'
-            )
-            .map((f: any) => ({
-                formatId: f.format_id,
-                resolution: f.resolution || `${f.width}x${f.height}`,
-                ext: f.ext,
-            }));
-        const metadata: VideoInfoResponse = {
-            title: rawData.title,
-            thumbnail: rawData.thumbnail,
-            duration: rawData.duration,
-            formats: cleanFormats,
+        await job.updateProgress(10);
+        logger.info(`[Job ${jobId}] Downloading from S3...`);
+        await StorageAdapter.download(fileKey, inputPath);
+
+        await job.updateProgress(30);
+        logger.info(`[Job ${jobId}] Transcoding...`);
+        await FfmpegProcessor.processFile(inputPath, outputPath, processingOptions || {});
+
+        await job.updateProgress(80);
+        logger.info(`[Job ${jobId}] Uploading Result...`);
+        await StorageAdapter.upload(outputPath, outputKey);
+
+        await job.updateProgress(100);
+        return {
+            status: 'completed',
+            originalKey: fileKey,
+            resultKey: outputKey,
+            downloadUrl: await StorageAdapter.getPresignedUrl(outputKey, 'video/mp4') // Optional: Generate download link
         };
 
-        return metadata;
-    }
-    catch (err: any) {
-        logger.error('An Error Occured While getting video info', { error: err.message, stack: err.stack });
-        throw new Error(`Failed to fetch metadata. The URL might be invalid or unsupported.`);
-    }
-
-};
-
-export const trimSmartly = async (options: {
-    url: string,
-    formatId: string,
-    startTime: string,
-    endTime: string
-}): Promise<string> => {
-
-    const uniqueSuffix = crypto.randomUUID();
-    const outputPath = path.join(os.tmpdir(), `vortex-output-${uniqueSuffix}.mp4`);
-    logger.info(`Generated temp path. Output: ${outputPath}`);
-    try {
-        logger.info('Starting yt-dlp smart trim process...');
-        const ytdlpArgs = [
-            '-f', options.formatId,
-            '--download-sections', `*${options.startTime}-${options.endTime}`,
-            '-o', outputPath,
-            options.url
-        ];
-        await runSpawnCommand('yt-dlp', ytdlpArgs);
-
-        logger.info(`Trimmed download complete. File at: ${outputPath}`);
-        return outputPath;
-
     } catch (error) {
-        logger.error('Failed during trim process:', error);
-        try {
-            if (fs.existsSync(outputPath)) {
-                await fs.promises.unlink(outputPath);
-                logger.info(`Cleaned up failed file: ${outputPath}`);
-            }
-        } catch (cleanupError) {
-            logger.warn(`Failed to cleanup temp file ${outputPath}:`, cleanupError);
-        }
+        logger.error(`[Job ${jobId}] Pipeline Failed:`, error);
         throw error;
+    } finally {
+        [inputPath, outputPath].forEach(file => {
+            if (fs.existsSync(file)) {
+                fs.unlinkSync(file);
+                logger.info(`[Job ${jobId}] Deleted temp file: ${file}`);
+            }
+        });
     }
-}
-export const processTrimJob = async (options: {
-    url: string,
-    formatId: string,
-    startTime: any,
-    endTime: any,
-}): Promise<string> => {
-
-    logger.info('--- New Trim Job Received ---');
-    try {
-        logger.info('Attempting Trim...');
-        const outputPath = await trimSmartly(options);
-        logger.info('Smart Trim Succeeded.');
-        return outputPath;
-
-    } catch (smartTrimError) {
-        logger.error("Trim Failed");
-        throw smartTrimError;
-    }
-}
+};
