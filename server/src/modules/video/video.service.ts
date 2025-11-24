@@ -9,11 +9,13 @@ export const processVideoJob = async (job: Job) => {
     const { fileKey, processingOptions } = job.data;
     const jobId = job.id;
 
+    const originalExt = path.extname(fileKey);
+    const targetExt = processingOptions?.format ? `.${processingOptions.format}` : '.mp4';
     logger.info(`[Job ${jobId}] Starting Pipeline...`);
     const tempDir = path.resolve('temp');
-    const inputPath = path.join(tempDir, 'uploads', `${jobId}_in`);
-    const outputPath = path.join(tempDir, 'processed', `${jobId}_out.mp4`);
-    const outputKey = `processed/${jobId}.mp4`;
+    const inputPath = path.join(tempDir, 'uploads', `${jobId}_in${originalExt}`);
+    const outputPath = path.join(tempDir, 'processed', `${jobId}_out${targetExt}`);
+    const outputKey = `processed/${jobId}${targetExt}`;
 
     try {
         await job.updateProgress(10);

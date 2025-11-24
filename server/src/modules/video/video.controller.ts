@@ -36,17 +36,23 @@ export const initializeUpload = async (req: Request, res: Response, next: NextFu
 export const submitProcessingJob = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { fileKey, processingOptions } = req.body;
+        const userId = (req.user as any)?.id;
 
         if (!fileKey) {
             res.status(400).json({ error: 'fileKey is required.' });
             return;
         }
+        if (!userId || !fileKey.startsWith(`uploads/${userId}/`)) {
+            res.status(403).json({ error: 'Forbidden: fileKey does not belong to this user.' });
+            return;
+        }
+
 
         // Add to BullMQ
         const job = await videoQueue.add('process-video', {
             fileKey,
             processingOptions,
-            userId: (req.user as any)?.id || 'guest'
+            userId: userId
         }, {
             priority: 2
         });

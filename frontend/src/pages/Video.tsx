@@ -122,6 +122,11 @@ function Video() {
       setError(null);
       setJobStatus("idle");
       setUploadProgress(0);
+      setFileKey(null);
+      setJobId("");
+      setProcessingProgress(0);
+      setJobError("");
+      setDownloadUrl("");
     }
   };
 

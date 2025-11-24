@@ -20,8 +20,12 @@ export const env = {
 
     // Redis
     REDIS_HOST: getEnvVariable('REDIS_HOST'),
-    REDIS_PORT: parseInt(getEnvVariable('REDIS_PORT'), 10),
-    REDIS_PASSWORD: getEnvVariable('REDIS_PASSWORD', false), 
+    REDIS_PORT: (() => {
+        const port = parseInt(getEnvVariable('REDIS_PORT'), 10);
+        if (isNaN(port)) throw new Error('REDIS_PORT must be a valid number');
+        return port;
+    })(),
+    REDIS_PASSWORD: getEnvVariable('REDIS_PASSWORD', false),
 
     // Auth
     SESSION_SECRET: getEnvVariable('SESSION_SECRET'),
