@@ -1,15 +1,53 @@
-version: '3.8'
 services:
-  vortex-server:
-    build: ./server 
+  vortex-api:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.api
+    restart: always  
+    container_name: vortex-api
+    command: npm run start:api 
     ports:
-      - "8080:8080" 
+      - "80:8080"
     env_file:
-      - ./server/.env 
+      - ./server/.env
+    environment:
+      - REDIS_HOST=redis
     depends_on:
-    - redis
+      - redis
+    networks:
+      - vortex-network
+
+  vortex-worker:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.worker
+    container_name: vortex-worker
+    restart: always
+    command: npm run start:worker
+    env_file:
+      - ./server/.env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
+    networks:
+      - vortex-network
+
   redis:
-    image: "redis:alpine" 
-    ports :
-     - "6379:6379"
-    command: ["redis-server", "--requirepass", "mish3791"]    
+    image: redis:alpine
+    restart: always
+    container_name: vortex-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - vortex-network
+
+networks:
+  vortex-network:
+    driver: bridge

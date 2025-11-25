@@ -27,3 +27,4 @@ Thumbs.db
 
 # Test & Build Artifacts
 /coverage
+/temp

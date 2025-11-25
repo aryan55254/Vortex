@@ -12,6 +12,9 @@ import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { ExpressAdapter } from '@bull-board/express';
 import { videoQueue } from './modules/video/video.queue';
+import './modules/auth/passport.setup';
+import connectdb from './common/config/db';
+import cors from 'cors'
 
 // Routes
 import videoRoutes from './modules/video/video.routes';
@@ -20,6 +23,15 @@ import { isAdmin } from './common/middlewares/auth.middleware';
 
 const app = express();
 const httpServer = createServer(app);
+
+app.use(cors({
+    origin: env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+connectdb();
 
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/admin/queues');
@@ -43,6 +55,7 @@ app.use(express.json());
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
