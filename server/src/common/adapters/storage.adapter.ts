@@ -24,7 +24,10 @@ export const StorageAdapter = {
             ContentType: contentType,
             ContentLength: LIMITS.MAX_VIDEO_SIZE
         });
-        return await getSignedUrl(s3, command, { expiresIn: 3600 });
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
+            return url.replace('minio:9000', 'localhost:9000');
+        }
     },
 
     async download(fileKey: string, localPath: string) {
@@ -59,6 +62,9 @@ export const StorageAdapter = {
             Key: fileKey
         });
 
-        return await getSignedUrl(s3, command, { expiresIn: 3600 });
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
+            return url.replace('minio:9000', 'localhost:9000');
+        }
     },
 };
