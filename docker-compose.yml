@@ -50,6 +50,3 @@ services:
 networks:
   vortex-network:
     driver: bridge
-
-volumes:
-  minio_data:
