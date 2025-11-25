@@ -22,6 +22,7 @@ services:
       context: ./server
       dockerfile: Dockerfile.worker
     container_name: vortex-worker
+    restart: always
     command: npm run start:worker
     env_file:
       - ./server/.env
