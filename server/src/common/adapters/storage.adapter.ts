@@ -17,17 +17,19 @@ const s3 = new S3Client({
 });
 
 export const StorageAdapter = {
-    async getPresignedUrl(fileKey: string, contentType: string) {
+  async getPresignedUrl(fileKey: string, contentType: string) {
         const command = new PutObjectCommand({
             Bucket: env.S3_BUCKET,
             Key: fileKey,
-            ContentType: contentType,
-            ContentLength: LIMITS.MAX_VIDEO_SIZE
+            ContentType: contentType
         });
+        
         const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        
         if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
             return url.replace('minio:9000', 'localhost:9000');
         }
+        return url;
     },
 
     async download(fileKey: string, localPath: string) {
