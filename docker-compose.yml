@@ -34,7 +34,7 @@ services:
       resources:
         limits:
           cpus: '0.50'
-          memory: 1G
+          memory: 1.5G
     networks:
       - vortex-network
 
