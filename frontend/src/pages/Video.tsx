@@ -153,8 +153,7 @@ function Video() {
 
      await axios.put(uploadUrl, selectedFile, {
         headers: {
-          "Content-Type": selectedFile.type, 
-          "Content-Length": selectedFile.size.toString(),
+          "Content-Type": selectedFile.type,
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
