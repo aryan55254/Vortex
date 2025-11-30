@@ -151,8 +151,11 @@ function Video() {
       const { uploadUrl, fileKey } = signRes.data;
       setFileKey(fileKey);
 
-      await axios.put(uploadUrl, selectedFile, {
-        headers: { "Content-Type": selectedFile.type },
+     await axios.put(uploadUrl, selectedFile, {
+        headers: {
+          "Content-Type": selectedFile.type, 
+          "Content-Length": selectedFile.size.toString(),
+        },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percent = Math.round(
