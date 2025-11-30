@@ -33,8 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (response.data) {
           setUser(response.data);
           if (
-            window.location.pathname === "/" ||
-            window.location.pathname === "/auth"
+            response.data &&
+            (window.location.pathname === "/" ||
+              window.location.pathname === "/auth")
           ) {
             navigate("/video");
           }
