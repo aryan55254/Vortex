@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import type { ReactNode } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_BaseAPI;
 
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setisLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -30,6 +32,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         if (response.data) {
           setUser(response.data);
+          if (
+            window.location.pathname === "/" ||
+            window.location.pathname === "/auth"
+          ) {
+            navigate("/video");
+          }
         }
       } catch (error: any) {
         console.error("no active session found", error);
