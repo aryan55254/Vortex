@@ -17,15 +17,15 @@ const s3 = new S3Client({
 });
 
 export const StorageAdapter = {
-  async getPresignedUrl(fileKey: string, contentType: string) {
+    async getPresignedUrl(fileKey: string, contentType: string) {
         const command = new PutObjectCommand({
             Bucket: env.S3_BUCKET,
             Key: fileKey,
-            ContentType: contentType,
         });
-        
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        
+
+        const url = await getSignedUrl(s3, command, { expiresIn: 60 * 60 * 12 });
+
+
         if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
             return url.replace('minio:9000', 'localhost:9000');
         }
@@ -58,15 +58,17 @@ export const StorageAdapter = {
         });
         await s3.send(command);
     },
-    async getDownloadUrl(fileKey: string, contentType: String) {
-        const command = new GetObjectCommand({
-            Bucket: env.S3_BUCKET,
-            Key: fileKey
-        });
+    async getDownloadUrl(fileKey: string) {
+        const url = await getSignedUrl(
+            s3,
+            new GetObjectCommand({
+                Bucket: env.S3_BUCKET,
+                Key: fileKey
+            }),
+            { expiresIn: 60 * 60 * 12 }
+        );
 
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
-            return url.replace('minio:9000', 'localhost:9000');
-        }
-    },
+        return url;
+    }
+    ,
 };
