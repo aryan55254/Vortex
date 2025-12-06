@@ -14,7 +14,12 @@ authRouter.get('/google/callback', passport.authenticate('google', {
 authRouter.post('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) { return next(err); }
-        res.status(200).json({ message: 'Logged out successfully' });
+        req.session.destroy((err) => {
+            if (err) { return next(err); }
+            res.clearCookie('connect.sid');
+
+            return res.status(200).json({ message: 'Logged out successfully' });
+        });
     });
 });
 authRouter.get('/me', (req, res) => {

@@ -51,9 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API}/api/auth/logout`, {
-        withCredentials: true,
-      });
+      await axios.post(`${API}/api/auth/logout`, {}, { withCredentials: true });
       setUser(null);
       navigate("/");
     } catch (error: any) {
