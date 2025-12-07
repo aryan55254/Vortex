@@ -152,12 +152,14 @@ function Video() {
       setFileKey(fileKey);
 
       await axios.put(uploadUrl, selectedFile, {
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+            setUploadProgress(
+              Math.round((progressEvent.loaded * 100) / progressEvent.total)
             );
-            setUploadProgress(percent);
           }
         },
       });

@@ -21,6 +21,7 @@ export const StorageAdapter = {
         const command = new PutObjectCommand({
             Bucket: env.S3_BUCKET,
             Key: fileKey,
+            ContentType: contentType,
         });
 
         const url = await getSignedUrl(s3, command, { expiresIn: 60 * 60 * 12 });
