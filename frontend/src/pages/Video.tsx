@@ -135,8 +135,9 @@ function Video() {
     if (!selectedFile) return;
 
     try {
-      setIsUploading(true);
       setError(null);
+      setIsUploading(true);
+      setUploadProgress(0);
       setJobStatus("uploading");
 
       const signRes = await axios.post(
@@ -151,8 +152,9 @@ function Video() {
       const { uploadUrl, fileKey } = signRes.data;
       setFileKey(fileKey);
 
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+
         xhr.open("PUT", uploadUrl);
 
         xhr.setRequestHeader("Content-Type", selectedFile.type);
@@ -165,21 +167,21 @@ function Video() {
         };
 
         xhr.onload = () => {
-          if (xhr.status === 200) resolve(null);
-          else reject(new Error(`Upload failed with status ${xhr.status}`));
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`S3 Upload failed: ${xhr.status}`));
         };
 
-        xhr.onerror = reject;
+        xhr.onerror = () => reject(new Error("Network error during upload"));
 
         xhr.send(selectedFile);
       });
 
       setJobStatus("ready_to_process");
-      setIsUploading(false);
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.error || "Upload failed. Please try again.");
+      setError("Upload failed. Check connection or permissions.");
       setJobStatus("idle");
+    } finally {
       setIsUploading(false);
     }
   };
