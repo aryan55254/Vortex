@@ -22,15 +22,12 @@ export const StorageAdapter = {
             Bucket: env.S3_BUCKET,
             Key: fileKey,
             ContentType: contentType,
+            ContentLength: LIMITS.MAX_VIDEO_SIZE
         });
-
-        const url = await getSignedUrl(s3, command, { expiresIn: 60 * 60 * 12 });
-
-
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
         if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
             return url.replace('minio:9000', 'localhost:9000');
         }
-        return url;
     },
 
     async download(fileKey: string, localPath: string) {
@@ -59,17 +56,15 @@ export const StorageAdapter = {
         });
         await s3.send(command);
     },
-    async getDownloadUrl(fileKey: string) {
-        const url = await getSignedUrl(
-            s3,
-            new GetObjectCommand({
-                Bucket: env.S3_BUCKET,
-                Key: fileKey
-            }),
-            { expiresIn: 60 * 60 * 12 }
-        );
+    async getDownloadUrl(fileKey: string, contentType: String) {
+        const command = new GetObjectCommand({
+            Bucket: env.S3_BUCKET,
+            Key: fileKey
+        });
 
-        return url;
-    }
-    ,
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        if (env.NODE_ENV === 'development' && url.includes('minio:9000')) {
+            return url.replace('minio:9000', 'localhost:9000');
+        }
+    },
 };

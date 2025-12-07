@@ -41,7 +41,7 @@ export const processVideoJob = async (job: Job) => {
         return {
             status: 'completed',
             resultKey: outputKey,
-            downloadUrl: await StorageAdapter.getDownloadUrl(outputKey)
+            downloadUrl: await StorageAdapter.getDownloadUrl(outputKey, 'video/mp4')
         };
 
     } catch (error) {

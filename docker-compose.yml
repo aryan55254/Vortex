@@ -8,11 +8,6 @@ services:
     command: npm run start:api 
     ports:
       - "8080:8080"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"  
     env_file:
       - ./server/.env
     environment:
@@ -35,16 +30,11 @@ services:
       - REDIS_HOST=redis
     depends_on:
       - redis
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "5"  
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1.5G
+          cpus: '0.50'
+          memory: 1G
     networks:
       - vortex-network
 
@@ -54,11 +44,6 @@ services:
     container_name: vortex-redis
     ports:
       - "6379:6379"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"   
-        max-file: "5"  
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       - vortex-network

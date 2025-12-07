@@ -134,41 +134,43 @@ function Video() {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
-    setIsUploading(true);
-    setError(null);
-    setJobStatus("uploading");
+    try {
+      setIsUploading(true);
+      setError(null);
+      setJobStatus("uploading");
 
-    const signRes = await axios.post(
-      `${API}/api/videos/sign-upload`,
-      {
-        contentType: selectedFile.type,
-      },
-      { withCredentials: true }
-    );
+      const signRes = await axios.post(
+        `${API}/api/videos/sign-upload`,
+        {
+          contentType: selectedFile.type,
+          fileSize: selectedFile.size,
+        },
+        { withCredentials: true }
+      );
 
-    const { uploadUrl, fileKey } = signRes.data;
-    setFileKey(fileKey);
+      const { uploadUrl, fileKey } = signRes.data;
+      setFileKey(fileKey);
 
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl);
-      xhr.setRequestHeader("Content-Type", selectedFile.type);
+      await axios.put(uploadUrl, selectedFile, {
+        headers: { "Content-Type": selectedFile.type },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percent);
+          }
+        },
+      });
 
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          setUploadProgress(Math.round((event.loaded / event.total) * 100));
-        }
-      };
-
-      xhr.onload = () =>
-        xhr.status === 200 ? resolve(null) : reject("Upload failed");
-      xhr.onerror = reject;
-
-      xhr.send(selectedFile);
-    });
-
-    setIsUploading(false);
-    setJobStatus("ready_to_process");
+      setJobStatus("ready_to_process");
+      setIsUploading(false);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.error || "Upload failed. Please try again.");
+      setJobStatus("idle");
+      setIsUploading(false);
+    }
   };
 
   // Step 2: Processing Logic
