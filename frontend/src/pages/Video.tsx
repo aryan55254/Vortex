@@ -134,52 +134,41 @@ function Video() {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
-    try {
-      setIsUploading(true);
-      setError(null);
-      setJobStatus("uploading");
+    setIsUploading(true);
+    setError(null);
+    setJobStatus("uploading");
 
-      const signRes = await axios.post(
-        `${API}/api/videos/sign-upload`,
-        {
-          contentType: selectedFile.type,
-          fileSize: selectedFile.size,
-        },
-        { withCredentials: true }
-      );
+    const signRes = await axios.post(
+      `${API}/api/videos/sign-upload`,
+      {
+        contentType: selectedFile.type,
+      },
+      { withCredentials: true }
+    );
 
-      const { uploadUrl, fileKey } = signRes.data;
-      setFileKey(fileKey);
+    const { uploadUrl, fileKey } = signRes.data;
+    setFileKey(fileKey);
 
-      await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", uploadUrl);
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", selectedFile.type);
 
-        xhr.setRequestHeader("Content-Type", selectedFile.type);
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          setUploadProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      };
 
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            setUploadProgress(Math.round((event.loaded / event.total) * 100));
-          }
-        };
+      xhr.onload = () =>
+        xhr.status === 200 ? resolve(null) : reject("Upload failed");
+      xhr.onerror = reject;
 
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve(null);
-          else reject(new Error(`Upload failed. HTTP ${xhr.status}`));
-        };
+      xhr.send(selectedFile);
+    });
 
-        xhr.onerror = () => reject(new Error("Network upload error"));
-        xhr.send(selectedFile);
-      });
-
-      setJobStatus("ready_to_process");
-    } catch (err) {
-      console.error(err);
-      setError("Upload failed. Check CORS, permissions, or Internet.");
-      setJobStatus("idle");
-    } finally {
-      setIsUploading(false);
-    }
+    setIsUploading(false);
+    setJobStatus("ready_to_process");
   };
 
   // Step 2: Processing Logic
