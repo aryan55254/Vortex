@@ -151,17 +151,27 @@ function Video() {
       const { uploadUrl, fileKey } = signRes.data;
       setFileKey(fileKey);
 
-      await axios.put(uploadUrl, selectedFile, {
-        headers: {
-          "Content-Type": selectedFile.type,
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            setUploadProgress(
-              Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            );
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+
+        xhr.setRequestHeader("Content-Type", selectedFile.type);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
           }
-        },
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve(null);
+          else reject(new Error(`Upload failed with status ${xhr.status}`));
+        };
+
+        xhr.onerror = reject;
+
+        xhr.send(selectedFile);
       });
 
       setJobStatus("ready_to_process");
