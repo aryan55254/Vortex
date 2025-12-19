@@ -26,6 +26,12 @@ This architecture is the first step toward a true microservices system, as the A
 
 ![Architecture](public/architecture.png)
 
+## Queue Benchmarks :
+
+Successfully tested the bullmq queue to deal with 4000+ jobs across 5 seconds which translates to approximately 800 jobs per second.
+
+![Benchmarks](public/benchmarks.png)
+
 ### 1. Backend API (Express Server)
 
 This is the "brain" of the operation. It's a Node.js server that handles all client-facing requests. Its job is to be fast and light.
