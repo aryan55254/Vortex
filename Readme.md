@@ -28,7 +28,7 @@ This architecture is the first step toward a true microservices system, as the A
 
 ## Queue Benchmarks :
 
-Successfully tested the bullmq queue to deal with 4000+ jobs across 5 seconds which translates to approximately 800 jobs per second.
+Successfully tested the bullmq queue to deal with 4000+ jobs concurrently.
 
 ![Benchmarks](public/benchmarks.png)
 
